@@ -1,0 +1,50 @@
+
+.inputpicker-div {
+    position: relative;
+    display: inline-block;
+}
+
+.inputpicker-arrow {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 20px;
+    height: 100%;
+    cursor:pointer;
+}
+
+.inputpicker-arrow b {
+    border-color:#888 transparent transparent;
+    border-style: solid;
+    border-width: 5px 4px 0;
+    height: 0;
+    left: 50%;
+    top: 50%;
+    margin-left: -4px;
+    margin-top: -2px;
+    position: absolute;
+    width: 0;
+    font-weight: 700;
+}
+
+.inputpicker-wrapped-list {
+}
+
+.inputpicker-wrapped-list .table {
+    margin-bottom: 0px;
+    border:1px solid #cccccc;
+}
+
+.inputpicker-wrapped-list .table>tbody>tr>td, .inputpicker-wrapped-list .table>tbody>tr>th, .inputpicker-wrapped-list .table>tfoot>tr>td, .inputpicker-wrapped-list .table>tfoot>tr>th, .inputpicker-wrapped-list .table>thead>tr>td, .inputpicker-wrapped-list .table>thead>tr>th {
+    padding: 5px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+
+.inputpicker-wrapped-list .table .selected{
+    background-color: #d9edf7;
+}
+.inputpicker-theme1 {
+
+}
