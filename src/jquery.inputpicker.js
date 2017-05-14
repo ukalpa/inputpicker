@@ -75,7 +75,7 @@
                 self.on('change.inputpicker', _eventChange);
 
                 // _eventChange.call(self.get(0));
-                _setValue(uuid, original.val());
+                _setValue(self, original.val());
             })
         },
 
@@ -211,6 +211,14 @@
         return $.fn.inputpicker.wrapped_list.find('.inputpicker-wrapped-element');
     }
 
+    function _getWrappedListElement(i) {
+        return _getWrappedList().find('inputpicker-wrapped-element-' + i);
+    }
+
+    function _getWrappedListSelectedElement() {
+        return _getWrappedList().find('.selected');
+    }
+
 
     function _getSettings(self) {
         return self.data('inputpicker-settings') ;
@@ -342,7 +350,7 @@
             var isSelected = false;
             for(var i = 0; i < data.length; i++) {
                 isSelected = value == data[i][ field_value ] ? true : false;
-                html_table += '<tr class="inputpicker-wrapped-element ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '">';
+                html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '">';
                 for (var j = 0; j < fields.length; j++) {
                     html_table += '<td>' + data[i][fields[j]['name']] + '</td>';
                 }
@@ -368,7 +376,7 @@
                 var self = $('#inputpicker-' + uuid);
                 var data = _getSetting(self, 'data');
 
-                _setValue(uuid, data[i][ _getSetting(self, 'field_value') ]);
+                _setValue(self, data[i][ _getSetting(self, 'field_value') ]);
                 _hideWrappedList();
 
             })
@@ -396,11 +404,18 @@
         return ++window.inputpickerUUID;
     }
 
-    function _setValue(uuid, value) {
-        var self = $('#inputpicker-' + uuid);
+    /**
+     * Set value and selected
+     * @param self
+     * @param value
+     * @private
+     */
+    function _setValue(self, value) {
+        var uuid = self.data('inputpicker-uuid');
         var original = $('.inputpicker-original-' + uuid);
         var settings = _getSettings(self);
         var data = _getSetting(self, 'data');
+        var wrapped_list = _getWrappedList();
 
         self.data('inputpicker-i', -1);
         for(var i = 0; i < data.length; i++){
@@ -408,6 +423,16 @@
                 self.data('inputpicker-i', i);
                 self.val( data[i][ settings['field_text'] ]);
                 original.val( data[i][ settings['field_value'] ]);
+
+                // Selected
+                if (_getWrappedList()){
+                    _getWrappedListSelectedElement().removeClass('selected');
+                    _getWrappedListElement(i).addClass('selected');
+                }
+
+
+
+
                 break;
             }
         }
@@ -539,6 +564,14 @@
         // }
         // dd('_eventKeyUp:' + e.keyCode);
 
+
+        switch(e.keyCode){
+            case 38:    // Up
+            case 40:    // Down
+                return;
+
+        }
+
         if(!self.val()){    // Empty
             _getWrappedListElements().each(function () {
                 $(this).show();
@@ -577,9 +610,26 @@
 
 
     $.fn.inputpicker.defaults = {
+
+        // Data
+        data: [],
+        fields: [{name:'value', text:'Value'}],
+        field_text :'value',
+        field_value: 'value',
+
+        // Split Setting
+        splitOpen
+
+
+        // Pagination
+        pagination: false,
+        limit: 10,
+
+        // Style
         width: '100%',
-        height: '200px',
-        showOn: ['click', 'focus']
+        height: '200px'
+
+
     };
 
     $.fn.inputpicker.wrapped_list = null;

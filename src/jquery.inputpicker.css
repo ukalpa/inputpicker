@@ -1,7 +1,12 @@
+/**
+ * jQuery-inputpicker - A jQuery input picker plugin. It supports showing multiple columns select in input.
+ * Copyright (c) 2017 Ukalpa - https://ukalpa.com/inputpicker
+ * License: MIT
+ */
 
 .inputpicker-div {
     position: relative;
-    display: inline-block;
+    /*display: inline-block;*/
 }
 
 .inputpicker-arrow {
