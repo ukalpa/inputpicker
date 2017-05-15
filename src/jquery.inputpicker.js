@@ -500,10 +500,6 @@
                     _getWrappedListSelectedElement().removeClass('selected');
                     _getWrappedListElement(i).addClass('selected');
                 }
-
-
-
-
                 break;
             }
         }
@@ -511,12 +507,45 @@
         // original.val( data[i][ settings['fieldValue'] ]);
     }
 
+    function _setValueAsI(self, i) {
+        var uuid = self.data('inputpicker-uuid');
+        var original = $('.inputpicker-original-' + uuid);
+        var settings = _getSettings(self);
+        var data = _getSetting(self, 'data');
+
+        if (i >= data.length || i == -1)   return false;
+
+        // Set value
+        self.data('inputpicker-i', i);
+        self.val( data[i][ settings['fieldText'] ]);
+        original.val( data[i][ settings['fieldValue'] ]);
+
+        //Set selected
+        if (_getWrappedList()){
+            _getWrappedListSelectedElement().removeClass('selected');
+            _getWrappedListElement(i).addClass('selected');
+        }
+
+        // var wrapped_list = _getWrappedList();
+        // var wrapped_elements = _getWrappedListElements();
+        // if ( _isWrappedListVisible() && wrapped_list.data('inputpicker-uuid') == uuid &&  wrapped_elements.length){
+        //     wrapped_list.find('.selected').removeClass('selected');
+        //     var tr_selected = wrapped_list.find('.inputpicker-wrapped-element-' + i);
+        //     if (tr_selected.length){
+        //         tr_selected.addClass('selected');
+        //     }
+        //
+        // }
+
+
+    }
+
     /**
      * Set selected as value
      * @param uuid
      * @private
      */
-    function _setSelectedAsValue(self) {
+    function _setValueAsSelected(self) {
         var uuid = self.data('inputpicker-uuid');
         var original = $('.inputpicker-original-' + uuid);
         var settings = _getSettings(self);
@@ -574,58 +603,38 @@
 
     function _eventKeyDown(e) {
         var self = $(this);
-        var uuid = self.data('inputpicker-uuid');
-
+        var wrapped_list = _showWrappedList();
+        // // Close if the wrapped list is invisible
         // if(!_isWrappedListVisible()){
         //     e.stopPropagation();
         //     e.preventDefault();
         //     return;
         // }
-
-        // Change Data
-        // _searchContent(self, self.val());
-        // _render(self);
-
-        var wrapped_list = _showWrappedList();
-
-
         switch(e.keyCode){
             case 38:    // Up
-                if(_isWrappedListVisible()){
-                    var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
-                    if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
-                        tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
-
-                        if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
-                            wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
-                        }
+                var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
+                if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
+                    tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
+                    if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
+                        wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
                     }
                 }
                 break;
             case 40:    // Down
-                if(_isWrappedListVisible()) {
-                    var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
-                    if (tr_selected.next('.inputpicker-wrapped-element').length) {
-                        tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
-                        if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
-                            wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
-                        }
+                var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
+                if (tr_selected.next('.inputpicker-wrapped-element').length) {
+                    tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
+                    if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
+                        wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
                     }
                 }
                 break;
-            case 13:    // Return
-                e.preventDefault();
-                _setSelectedAsValue(self);
-                _hideWrappedList();
+            case 27:    // Esc
+                _setValueAsI(self, self.data('inputpicker-i'));
                 break;
             case 9:     // Tab
-                // self.val('');
-                // Move to blur
-                _setSelectedAsValue(self);
+                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
                 _hideWrappedList();
-                break;
-            case 27:    // Esc
-
                 break;
 
         }
@@ -635,19 +644,43 @@
 
     function _eventKeyUp(e) {
         var self = $(this);
-        //
-        // switch(e.keyCode){
-        //
-        // }
-        // dd('_eventKeyUp:' + e.keyCode);
+        var wrapped_list = _showWrappedList();
+        if(!_isWrappedListVisible()){
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
 
+        dd('asb:' + e.keyCode );
 
         switch(e.keyCode){
             case 38:    // Up
+                return;
+                break;
             case 40:    // Down
                 return;
-
+                break;
+            case 13:    // Return
+                e.preventDefault();
+                var self_last_i = self.data('inputpicker-i');
+                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
+                if ( self_last_i == self.data('inputpicker-i')){
+                    dd('toggle');
+                    _getWrappedList().toggle();
+                }
+                else{
+                    dd('bbbbbb');
+                    _hideWrappedList();
+                }
+                break;
+            case 9:     // Tab
+                break;
+            case 27:    // ESC
+                break;
         }
+
+
+
 
         if(!self.val()){    // Empty
             _getWrappedListElements().each(function () {
@@ -663,13 +696,12 @@
         if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
             wrapped_list.find('.selected').removeClass('selected');
             wrapped_list.find('.inputpicker-wrapped-element:visible').first().addClass('selected');
-            dd( 'wrapped_elements.first()' + wrapped_elements.first().data('i') );
         }
-        dd([
-            '.selected:visible: ' +  wrapped_list.find('.selected:visible').length + ', ' + wrapped_elements.length,
-            wrapped_elements.first().length,
-            wrapped_elements.find(':visible').first().html()
-        ]);
+        // dd([
+        //     '.selected:visible: ' +  wrapped_list.find('.selected:visible').length + ', ' + wrapped_elements.length,
+        //     wrapped_elements.first().length,
+        //     wrapped_elements.find(':visible').first().html()
+        // ]);
     }
 
     function dd(d) {

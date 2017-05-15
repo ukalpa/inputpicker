@@ -9,12 +9,18 @@ $ip_src = '../src/';
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa</title>
+    <meta name="author" content="ukalpa@gmail.com">
+    <meta name="description" content="Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa">
+
+    <meta name="viewport" content="width=device-width">
     <script>
         function dd(d) {
             console.log(d);
         }
     </script>
+
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -44,21 +50,25 @@ $ip_src = '../src/';
         header {
             background-color:#e8e8e8;
         }
-        header h1{
-            margin-top:5px;
+        header .navbar-brand{
+            margin-top:0px;
+            font-size:24px;
             color:#337ab7;
         }
         header .description{
             font-size:16px;
-            margin-top:18px;
-            margin-left:25px;
+            position: absolute;
+            margin-left:150px;
+            margin-top:15px;
             color:#555555;
         }
         header .nav a {
             padding-top: 18px;
             font-size:16px;
         }
-
+        .icon-bar {
+            background-color: #337ab7;
+        }
 
         .ip-content {
             /*margin-top:20px;*/
@@ -93,42 +103,40 @@ $ip_src = '../src/';
             margin-top:20px;
         }
 
-
         .hljs {
             background-color: #f5f5f5;
         }
     </style>
 </head>
 <body>
-
-
-<header style="display: none1;">
+<header class="navbar">
     <div class="container-fluid">
-        <div class="pull-left">
-            <h1>Inputpicker</h1>
+        <div class="navbar-header">
+            <button aria-controls="bs-navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#bs-navbar" data-toggle="collapse" type="button"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
+            <a href="../" class="navbar-brand">Inputpicker</a>
         </div>
-        <div class="pull-left hidden-xs hidden-sm description">
+        <div class="description hidden-xs" style="">
             <i>A jQuery input picker plugin supporting multiple columns in input box.</i>
         </div>
-        <div class="pull-right">
-            <ul class="nav navbar-nav">
+        <nav class="navbar-collapse collapse" id="bs-navbar" aria-expanded="false" >
+            <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="#">Examples</a></li>
                 <li><a href="https://github.com/ukalpa/inputpicker/archive/master.zip" target="_blank">Download</a></li>
                 <li><a href="https://github.com/ukalpa/inputpicker" target="_blank">Source code on GitHub</a></li>
                 <li><a href="https://github.com/ukalpa/inputpicker/issues" target="_blank">Help</a></li>
                 <li><a href="http://ukalpa.com" target="_blank">Author</a></li>
             </ul>
+        </nav>
+        <div class="pull-right">
+
         </div>
     </div>
 </header>
-
-
 
 <div class="container">
     <div class="row">
         <div class="col-sm-3 pull-right hidden-xs hidden-sm">
             <div class="ip-side-bar">
-                <!--                <ul class="ip-side-nav">-->
                 <ul class="nav nav-pills nav-stacked ip-side-nav" data-spy="affix" data-offset-top="55">
                     <li><a href="#basic">The Basic uses</a>
                         <ul class="nav">
@@ -137,7 +145,6 @@ $ip_src = '../src/';
                             <li><a href="#basic-filter-input">Filter input</a></li>
                         </ul>
                     </li>
-
                     <li><a href="#remote">Remote data</a>
                         <ul class="nav">
                             <li class="active"><a href="#remote-json">JSON</a></li>
@@ -149,8 +156,7 @@ $ip_src = '../src/';
         <div class="col-sm-9">
             <div class="ip-content" style="">
 
-
-
+                <!-- Start examples-->
                 <a name="basic"></a>
                 <h2>Basic uses</h2>
                 <!-- Begin section 1 -->
@@ -164,7 +170,7 @@ $ip_src = '../src/';
                         </p>
                         <h4>Example</h4>
                         <div class=" ">
-                            <input class="form-control" id="test<?php echo $test_index ?>" value="Text 2" />
+                            <input class="form-control" id="test<?php echo $test_index ?>" value="Text 2" required />
                         </div>
                         <h4>Source code</h4>
                         <pre><code class="html"><?php echo ip_html("<input class=\"form-control\" id=\"test\" value=\"Text 2\" />
@@ -354,8 +360,8 @@ $('#test').inputpicker({
 </div>
 <footer>
     <div class="container-fluid">
-        <div style="margin 0 auto;">
-            Copyright @ 2017
+        <div style="text-align: center;">
+            Copyright @ 2017 <a href="http://ukalpa.com">ukalpa</a>
         </div>
     </div>
 </footer>
