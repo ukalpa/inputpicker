@@ -59,6 +59,21 @@
                 }
 
                 var settings = $.extend({}, $.fn.inputpicker.defaults, _options, options);
+
+                // Check data
+                if(!Array.isArray(settings['data'])){
+                    throw "The type of data(" + ( typeof settings['data'] ) + ") is incorrect in inputpicker.init().";
+                }
+
+                // Change ["a", "b"] to [{value:"a"}, {value:"b"}]
+                if (settings['data'].length && typeof settings['data'][0] != 'object'){
+                    var data = [];
+                    for(var i in settings['data']){
+                        data.push({value:settings['data'][i]});
+                    }
+                    settings['data'] = data;
+                }
+                self.data('inputpicker-original', original);
                 self.data('inputpicker-settings', settings);
                 self.prop('autocomplete', 'off');
 
@@ -75,7 +90,24 @@
                 self.on('change.inputpicker', _eventChange);
 
                 // _eventChange.call(self.get(0));
-                _setValue(self, original.val());
+
+                if (_getSetting(self, 'url')){
+                    _execJSON(self, {
+                        fieldValue: _getSetting(self, 'fieldValue'),
+                        value: original.val(),
+                    },function (ret) {
+                        if(ret['msg'])  alert(ret['msg']);
+                        else{
+                            var data = ret['data'];
+                            _setSetting(self, 'data', data);
+                            _setValue(self, original.val());
+                        }
+                    });
+                }
+                else{
+                    _setValue(self, original.val());
+                }
+
             })
         },
 
@@ -96,10 +128,7 @@
         data: function (data) {
             return this.each(function () {
                 var self = $(this);
-                var uuid = self.data('inputpicker-uuid');
                 _setSetting(self, 'data', data);
-
-
             });
         },
 
@@ -121,12 +150,7 @@
         show: function (e, t) {
             dd('inputpicker.show');
             var self = typeof t == 'undefined' ? $(this) : t;
-            var settings = _getSettings(self);
-            var data = _getSetting(self, 'data');
-            // if (e) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            // }
+            var uuid = self.data('inputpicker-uuid');
 
             // Check if readonly
             if (self.prop('readonly')){
@@ -139,17 +163,25 @@
                 return;
             }
 
-            /*
+            // Check
 
-             // Start showing
-             var selfOffset = {};
-             var left = self.offset().left , //+ self.outerWidth()
-             top = self.offset().top + self.outerHeight();
 
-             var wrapped_list = _initWrappedList();
-             */
+            var url = _getSetting(self, 'url');
+            if (typeof url != 'undefined' && url){
 
-            _render(self);
+                _execJSON(self, function (ret) {
+                    if(ret['msg'])  alert(ret['msg']);
+                    else{
+                        var data = ret['data'];
+                        _setSetting(self, 'data', data);
+                        _render(self, data);
+                    }
+                });
+            }
+            else{
+                _render(self);
+            }
+
 
         },
 
@@ -165,6 +197,23 @@
     };
 
     // ---------------------------------------------------------------------------------------------------------
+
+    function _execJSON(self, param, func) {
+        var uuid = self.data('inputpicker-uuid');
+        var url = _getSetting(self, 'url');
+
+        if (typeof func == 'undefined'){
+            func = param;
+            param = {};
+        }
+
+        $.get(url, $.extend({
+            q: self.val(),
+            qo: $('.inputpicker-original-' + uuid).val(),
+            limit : _getSetting(self, 'limit')
+        }, param), func);
+    }
+
 
     function _initWrappedList(self) {
         if ( !$.fn.inputpicker.wrapped_list){
@@ -254,10 +303,10 @@
         var uuid = self.data('inputpicker-uuid');
         var settings = _getSettings(self);
         var fields = _getSetting(self, 'fields');
-        var field_value = _getSetting(self, 'field_value');
-        var searchOpen = settings['searchOpen'];
-        var searchType = settings['searchType'];
-        var searchField = settings['searchField'];
+        var fieldValue = _getSetting(self, 'fieldValue');
+        var filterOpen = settings['filterOpen'];
+        var filterType = settings['filterType'];
+        var filterField = settings['filterField'];
         var data = _getSetting(self, 'data');
         var original_value = $('.inputpicker-original-' + uuid).val();
         var original_value_low = original_value.toLowerCase();
@@ -265,10 +314,9 @@
         var value_low = value.toLowerCase();
         var isShown;
 
-        if (!searchOpen || !value_low || !_isWrappedListVisible() || wrapped_list.data('inputpicker-uuid') != uuid){
+        if (!filterOpen || !value_low || !_isWrappedListVisible() || wrapped_list.data('inputpicker-uuid') != uuid){
             return;
         }
-
         _getWrappedListElements().each(function () {
             var i = $(this).data('i');
 
@@ -277,32 +325,32 @@
             // Check if need to see
             // First, the selected need to be shown
             // Check if need to be shown
-            if (typeof searchField == 'string' && searchField) // Search specific field
+            if (typeof filterField == 'string' && filterField) // Search specific field
             {
-                var field_value = data[i][searchField].toLowerCase();
-                if (searchType == 'left' && field_value.substr(0, value_low.length) == value_low) {
+                var fieldValue = data[i][filterField].toLowerCase();
+                if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
                     isShown = true;
                 }
-                else if (field_value.indexOf(value_low)) {
+                else if (fieldValue.indexOf(value_low) != -1) {
                     isShown = true;
                 }
             }
             else {
-                if (typeof searchField != 'array' && typeof searchField != 'object') {
-                    searchField = [];
-                    for(var k in fields)    searchField.push(fields[k]['name']);
+                if (typeof filterField != 'array' && typeof filterField != 'object') {
+                    filterField = [];
+                    for(var k in fields)    filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k] );
                 }
-                for (var k in searchField) {
-                    var field_value = data[i][searchField[k]].toLowerCase();
-                    if (searchType == 'left' && field_value.substr(0, value_low.length) == value_low) {
+                for (var k in filterField) {
+                    var fieldValue = data[i][filterField[k]].toLowerCase();
+                    if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
                         isShown = true;
                     }
-                    else if (field_value.indexOf(value_low) != -1) {
+                    else if (fieldValue.indexOf(value_low) != -1) {
                         isShown = true;
                     }
                 }
             }
-            // dd([i + ' => ' + isShown, field_value, value_low]);
+            // dd([i + ' => ' + isShown, filterField, fieldValue, value_low]);
             isShown ? $(this).show() : $(this).hide();
         });
 
@@ -313,52 +361,75 @@
      * @param self
      * @private
      */
-    function _render(self) {
+    function _render(self, data) {
         var wrapped_list = _initWrappedList(self);
         var uuid = self.data('inputpicker-uuid');
         var settings = _getSettings(self);
+        if(typeof data == 'undefined'){
+            data = _getSetting(self, 'data');
+        }
+
         var fields = _getSetting(self, 'fields');
-        var field_value = _getSetting(self, 'field_value');
-        var searchOpen = settings['searchOpen'];
-        var searchType = settings['searchType'];
-        var searchField = settings['searchField'];
-        var data = _getSetting(self, 'data');
+        var fieldValue = _getSetting(self, 'fieldValue');
+        var filterOpen = settings['filterOpen'];
+        var filterType = settings['filterType'];
+        var filterField = settings['filterField'];
         var value = $('.inputpicker-original-' + uuid).val();
 
         var left = self.offset().left , //+ self.outerWidth()
-            top = self.offset().top + self.outerHeight(),
-            width = self.outerWidth();
+            top = self.offset().top + self.outerHeight();
+        var width, height;
+
+        if ( settings['width'].substr(-1) == '%'){
+            var p = parseInt(settings['width'].slice(0, -1));
+            width = parseInt(100 * self.outerWidth() / p);
+        }
+        else{
+            width = settings['width'] ? settings['width'] : self.outerWidth();
+        }
+        height = settings['height'];
 
         wrapped_list.css({
             left: left + 'px',
             top: top + 'px',
             width: width,
+            maxHeight: height,
             display: ''
             //, backgroundColor:'#f1f1f1'
         }).data('inputpicker-uuid', uuid).html('');
 
-        var html_table = "<table class=\"table small\"><thead><tr>" ;
+        var html_table = "<table class=\"table small\">" ;
 
-        if(fields){
+        // Show head
+        if(_getSetting(self, 'headShow')){
+            html_table += '<thead><tr>';
             for(var i = 0; i < fields.length; i++){
-                html_table += '<th>' + fields[i]['text'] + '</th>';
+                var text = '';
+                if (typeof fields[i] == 'object'){
+                    text = fields[i]['text'] ? fields[i]['text'] : fields[i]['name'];
+                }
+                else{
+                    text = fields[i];
+                }
+                html_table += '<th>' + text + '</th>';
             }
+            html_table += '</thead>';
         }
-        html_table += "</thead><tbody>";
 
-        if(data){
+        html_table += "<tbody>";
+        if(data.length){
             var isSelected = false;
             for(var i = 0; i < data.length; i++) {
-                isSelected = value == data[i][ field_value ] ? true : false;
+                isSelected = value == data[i][ fieldValue ] ? true : false;
                 html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '">';
                 for (var j = 0; j < fields.length; j++) {
-                    html_table += '<td>' + data[i][fields[j]['name']] + '</td>';
+                    html_table += '<td>' + data[i][ typeof fields[j] == 'object' ? fields[j]['name'] : fields[j] ] + '</td>';
                 }
                 html_table += '</tr>';
             }
         }
 
-        html_table += "</tr></tbody></table>";
+        html_table += "</tbody></table>";
 
         wrapped_list.append($(html_table));
 
@@ -376,7 +447,7 @@
                 var self = $('#inputpicker-' + uuid);
                 var data = _getSetting(self, 'data');
 
-                _setValue(self, data[i][ _getSetting(self, 'field_value') ]);
+                _setValue(self, data[i][ _getSetting(self, 'fieldValue') ]);
                 _hideWrappedList();
 
             })
@@ -419,10 +490,10 @@
 
         self.data('inputpicker-i', -1);
         for(var i = 0; i < data.length; i++){
-            if ( data[i][ settings['field_value']] == value){
+            if ( data[i][ settings['fieldValue']] == value){
                 self.data('inputpicker-i', i);
-                self.val( data[i][ settings['field_text'] ]);
-                original.val( data[i][ settings['field_value'] ]);
+                self.val( data[i][ settings['fieldText'] ]);
+                original.val( data[i][ settings['fieldValue'] ]);
 
                 // Selected
                 if (_getWrappedList()){
@@ -436,8 +507,8 @@
                 break;
             }
         }
-        // self.val( data[i][ settings['field_text'] ]);
-        // original.val( data[i][ settings['field_value'] ]);
+        // self.val( data[i][ settings['fieldText'] ]);
+        // original.val( data[i][ settings['fieldValue'] ]);
     }
 
     /**
@@ -456,18 +527,17 @@
         if (tr_selected.length){
             var i = tr_selected.data('i');
             self.data('inputpicker-i', i);
-            self.val( data[i][ settings['field_text'] ]);
-            original.val( data[i][ settings['field_value'] ]);
+            self.val( data[i][ settings['fieldText'] ]);
+            original.val( data[i][ settings['fieldValue'] ]);
         }
     }
 
     function _hideWrappedList() {
-        dd('_hideWrappedList');
-        $.fn.inputpicker.wrapped_list.hide();
+        return $.fn.inputpicker.wrapped_list.hide();
     }
 
     function _showWrappedList() {
-        $.fn.inputpicker.wrapped_list.show();
+        return $.fn.inputpicker.wrapped_list.show();
     }
 
     function _eventChange(e) {
@@ -516,7 +586,7 @@
         // _searchContent(self, self.val());
         // _render(self);
 
-        _showWrappedList();
+        var wrapped_list = _showWrappedList();
 
 
         switch(e.keyCode){
@@ -525,6 +595,10 @@
                     var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                     if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
                         tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
+
+                        if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
+                            wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
+                        }
                     }
                 }
                 break;
@@ -533,6 +607,9 @@
                     var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                     if (tr_selected.next('.inputpicker-wrapped-element').length) {
                         tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
+                        if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
+                            wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
+                        }
                     }
                 }
                 break;
@@ -595,6 +672,12 @@
         ]);
     }
 
+    function dd(d) {
+        if (true)
+            console.log(d);
+
+    }
+
     // -------------------------------------------------------------------------------------------
     $.fn.inputpicker = function (method) {
         if(!this.length) return this;
@@ -611,24 +694,79 @@
 
     $.fn.inputpicker.defaults = {
 
-        // Data
-        data: [],
-        fields: [{name:'value', text:'Value'}],
-        field_text :'value',
-        field_value: 'value',
-
-        // Split Setting
-        splitOpen
-
-
-        // Pagination
-        pagination: false,
-        limit: 10,
-
-        // Style
+        /**
+         * Width , default is 100%
+         */
         width: '100%',
-        height: '200px'
 
+        /**
+         * Default Height
+         */
+        height: '200px',
+
+        /**
+         * True - show head
+         * False
+         */
+        headShow : false,   // true : show head, false: hide
+
+
+        /**
+         * Data
+         */
+        data: [],
+
+        /**
+         * Fields
+         * Store fields need to been shown in the list
+         * (Sting) - 'value'
+         * (Object) - {name:'value', text:'Value'}
+         */
+        fields: [
+            'value'
+        ],
+
+        /**
+         * The field shown in the input
+         */
+        fieldText :'value',
+
+        /**
+         * The field posting to the field
+         */
+        fieldValue: 'value',
+
+        // filter Setting
+
+        /**
+         * True - filter rows when changing the input content
+         * False - do not do any spliation
+         */
+        filterOpen: false,
+
+        /**
+         * Choose the method of filtering
+         * 'start' - start filtering from the beginning
+         * others - all content matches
+         */
+        filterType: '',  // 'start' - start from beginning or ''
+
+        /**
+         * Choose the fields need to be filtered
+         * (String)'name' - one field
+         * (Array)['name', 'value'] - multiple fields
+         */
+        filterField: '',
+
+        limit: 0,
+
+
+
+
+        // Un-necessary - Use Pagination
+        // pagination: false,
+
+        _bottom: ''
 
     };
 

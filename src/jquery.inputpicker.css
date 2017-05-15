@@ -33,6 +33,12 @@
 }
 
 .inputpicker-wrapped-list {
+    margin:0;
+    background-color:#ffffff;
+}
+
+.inputpicker-wrapped-list {
+    overflow-y: auto;
 }
 
 .inputpicker-wrapped-list .table {
