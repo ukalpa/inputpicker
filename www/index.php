@@ -46,6 +46,10 @@ $('#test').inputpicker({
     data:[ \"Text 1\", \"Text 2\", \"Text 3\" ]
 });
 </script>
+
+
+	<link rel=\"stylesheet\" href=\"./jquery.inputpicker.css\" />
+	<script src=\"./jquery.inputpicker.js\"></script>
 ");
 								?></code></pre>
                     </div>

@@ -10,7 +10,10 @@ I built this plugin because I could not find a suitable plugin to support multip
 * Download `src/jquery.inputpicker.js` and `src/jquery.inputpicker.css`
 * Load them in your script
 * Use it
-<pre><code>&lt;input id=&quot;test&quot; value=&quot;Text 2&quot; /&gt;
+<pre><code class="html">&lt;link rel=&quot;stylesheet&quot; href=&quot;./jquery.inputpicker.css&quot; /&gt;
+&lt;script src=&quot;./jquery.inputpicker.js&quot;&gt;&lt;/script&gt;
+
+&lt;input id=&quot;test&quot; value=&quot;Text 2&quot; /&gt;
 &lt;script&gt;
 $('#test').inputpicker({
    data:[ &quot;Text 1&quot;, &quot;Text 2&quot;, &quot;Text 3&quot; ]
