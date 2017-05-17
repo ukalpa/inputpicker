@@ -44,10 +44,13 @@
                 var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\"></div>").append(self);
 
                 // $('#inputpicker-" + uuid + "').inputpicker('toggle');
-                inputpicker_div.append("<span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$.fn.inputpicker('eventClickArrow');\"><b></b></span>");
+                inputpicker_div.append("<span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$('#inputpicker-" + uuid + "').inputpicker('arrow');event.stopPropagation();\"><b></b></span>");
 
                 original.after(inputpicker_div);
                 original.prop('type', 'hidden');
+
+                // Settings
+
 
                 // Add arrow for self
                 // Pick up settings from data attributes
@@ -58,7 +61,8 @@
                     }
                 }
 
-                var settings = $.extend({}, $.fn.inputpicker.defaults, _options, options);
+                // History settings
+                var settings = $.extend({}, $.fn.inputpicker.defaults, _options,  Array.isArray(options) ? {data:options} : options);
 
                 // Check data
                 if(!Array.isArray(settings['data'])){
@@ -73,24 +77,28 @@
                     }
                     settings['data'] = data;
                 }
+
+                if(!settings['fieldText'])  settings['fieldText'] = settings['fieldValue'];
+
+                if (!settings['fields'].length){
+                    settings['fields'].push(settings['fieldText']);
+                }
+
+
+
+
                 self.data('inputpicker-original', original);
                 self.data('inputpicker-settings', settings);
                 self.prop('autocomplete', 'off');
 
-                // if(settings.showOn){
-                //     for(var i in settings.showOn){
-                //         self.on(settings.showOn[i] + '.inputpicker', methods.show);
-                //     }
-                // }
+                // Events
                 self.on( 'focus.inputpicker', _eventFocus);
                 self.on( 'blur.inputpicker', _eventBlur);
-
                 self.on('keydown.inputpicker', _eventKeyDown);
                 self.on('keyup.inputpicker', _eventKeyUp);
                 self.on('change.inputpicker', _eventChange);
 
-                // _eventChange.call(self.get(0));
-
+                // Load data and set value
                 if (_getSetting(self, 'url')){
                     _execJSON(self, {
                         fieldValue: _getSetting(self, 'fieldValue'),
@@ -132,23 +140,27 @@
             });
         },
 
-        toggle: function (options) {
+        arrow: function (e) {
+            //_eventFocus
             return this.each(function () {
                 var self = $(this);
-
-
-                if ( _isWrappedListVisible() ){
+                if( _isWrappedListVisible(self) ) {
                     _hideWrappedList();
                 }
-                else{
-                    self.inputpicker('show');
+                else if(self.is(":focus")){ // Does not need?
+                    methods.show(null, self);
                 }
+                else{
+                    self.focus();
+
+                }
+                // Check if is current object
+                // _toggleWrappedList();
             });
         },
 
         // Events
         show: function (e, t) {
-            dd('inputpicker.show');
             var self = typeof t == 'undefined' ? $(this) : t;
             var uuid = self.data('inputpicker-uuid');
 
@@ -181,11 +193,10 @@
             else{
                 _render(self);
             }
-
-
         },
 
         eventClickArrow: function(e){
+            alert(1);
             return this.each(function () {
                 dd($(this).html());
                 $('#inputpicker-' + $(this).data('uuid')).focus();
@@ -247,25 +258,6 @@
         }
         return $.fn.inputpicker.wrapped_list;
         // var list = $("<div class=\"inputpicker-list\" style=\"position:absolute;left:" + left + "px;top:"+ top + "px;border:1px solid #888;width:100px;height:200px;\"></div>");
-    }
-
-    function _getWrappedList() {
-        return $.fn.inputpicker.wrapped_list;
-    }
-
-    function _getWrappedListElements() {
-        if ( !_getWrappedList() ){
-            return $([]);
-        }
-        return $.fn.inputpicker.wrapped_list.find('.inputpicker-wrapped-element');
-    }
-
-    function _getWrappedListElement(i) {
-        return _getWrappedList().find('inputpicker-wrapped-element-' + i);
-    }
-
-    function _getWrappedListSelectedElement() {
-        return _getWrappedList().find('.selected');
     }
 
 
@@ -363,6 +355,7 @@
      */
     function _render(self, data) {
         var wrapped_list = _initWrappedList(self);
+        _showWrappedList();
         var uuid = self.data('inputpicker-uuid');
         var settings = _getSettings(self);
         if(typeof data == 'undefined'){
@@ -380,6 +373,9 @@
             top = self.offset().top + self.outerHeight();
         var width, height;
 
+        var html_table = "";
+        var tmp, tmp1, tmp2;
+
         if ( settings['width'].substr(-1) == '%'){
             var p = parseInt(settings['width'].slice(0, -1));
             width = parseInt(100 * self.outerWidth() / p);
@@ -394,11 +390,31 @@
             top: top + 'px',
             width: width,
             maxHeight: height,
-            display: ''
-            //, backgroundColor:'#f1f1f1'
+            display: '',
         }).data('inputpicker-uuid', uuid).html('');
 
-        var html_table = "<table class=\"table small\">" ;
+        // CSS
+
+        html_table += "<style>";
+        if ( tmp = _getSetting(self, 'listBackgroundColor') ){
+            wrapped_list.css('backgroundColor', tmp);
+        }
+        if ( tmp = _getSetting(self, 'listBorderColor') ){
+            wrapped_list.css('borderColor', tmp);
+        }
+
+        tmp1 = _getSetting(self, 'rowSelectedBackgroundColor');
+        tmp2 = _getSetting(self, 'rowSelectedFontColor')
+        if ( tmp1 || tmp2 ){
+            html_table += ".inputpicker-wrapped-list .table .selected{ ";
+            if(tmp1)    html_table += "background-color: " + tmp1 + "; ";
+            if(tmp2)    html_table += "color: " + tmp2 + "; ";
+            html_table += "}";
+        }
+
+        html_table += "</style>";
+
+        html_table += "<table class=\"table small\">" ;
 
         // Show head
         if(_getSetting(self, 'headShow')){
@@ -416,6 +432,7 @@
             html_table += '</thead>';
         }
 
+        // Show data
         html_table += "<tbody>";
         if(data.length){
             var isSelected = false;
@@ -423,7 +440,10 @@
                 isSelected = value == data[i][ fieldValue ] ? true : false;
                 html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '">';
                 for (var j = 0; j < fields.length; j++) {
-                    html_table += '<td>' + data[i][ typeof fields[j] == 'object' ? fields[j]['name'] : fields[j] ] + '</td>';
+
+                    var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
+                    var v = typeof data[i][k] != 'undefined' ? data[i][k] : '';
+                    html_table += '<td>' + v + '</td>';
                 }
                 html_table += '</tr>';
             }
@@ -451,9 +471,15 @@
                 _hideWrappedList();
 
             })
-        })
+        });
 
 
+        // Check selected
+        var wrapped_elements = _getWrappedListElements();
+        if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
+            wrapped_list.find('.selected').removeClass('selected');
+            wrapped_list.find('.inputpicker-wrapped-element:visible').first().addClass('selected');
+        }
     }
 
     function _parseSettings(settings) {
@@ -464,10 +490,6 @@
     function _isInputVisible(os) {
         var o = os[0];
         return o.offsetWidth > 0 && o.offsetHeight > 0;
-    }
-
-    function _isWrappedListVisible() {
-        return $('#inputpicker-wrapped-list').is(':visible');
     }
 
     function _generateUid() {
@@ -561,13 +583,46 @@
         }
     }
 
+    function _getWrappedList() {
+        return $.fn.inputpicker.wrapped_list;
+    }
+
+    function _isWrappedListVisible(self) {
+        var is = $('#inputpicker-wrapped-list').is(':visible');
+        if (typeof self != 'undefined' && $('#inputpicker-wrapped-list').data('inputpicker-uuid') != self.data('inputpicker-uuid')){
+            is = false ;
+        }
+        return is;
+    }
+
     function _hideWrappedList() {
-        return $.fn.inputpicker.wrapped_list.hide();
+        return _getWrappedList().hide();
     }
 
     function _showWrappedList() {
-        return $.fn.inputpicker.wrapped_list.show();
+        return _getWrappedList().show();
     }
+
+    function _toggleWrappedList() {
+        _isWrappedListVisible() ? _hideWrappedList() : _showWrappedList();
+
+    }
+
+    function _getWrappedListElements() {
+        if ( !_getWrappedList() ){
+            return $([]);
+        }
+        return $.fn.inputpicker.wrapped_list.find('.inputpicker-wrapped-element');
+    }
+
+    function _getWrappedListElement(i) {
+        return _getWrappedList().find('inputpicker-wrapped-element-' + i);
+    }
+
+    function _getWrappedListSelectedElement() {
+        return _getWrappedList().find('.selected');
+    }
+
 
     function _eventChange(e) {
         dd('_eventChange');
@@ -603,7 +658,7 @@
 
     function _eventKeyDown(e) {
         var self = $(this);
-        var wrapped_list = _showWrappedList();
+        var wrapped_list = _getWrappedList();
         // // Close if the wrapped list is invisible
         // if(!_isWrappedListVisible()){
         //     e.stopPropagation();
@@ -612,6 +667,7 @@
         // }
         switch(e.keyCode){
             case 38:    // Up
+                _showWrappedList();
                 var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                 if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
                     tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
@@ -621,6 +677,7 @@
                 }
                 break;
             case 40:    // Down
+                _showWrappedList();
                 var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                 if (tr_selected.next('.inputpicker-wrapped-element').length) {
                     tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
@@ -633,9 +690,26 @@
                 _setValueAsI(self, self.data('inputpicker-i'));
                 break;
             case 9:     // Tab
-                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
+                // self.val() ? _setValueAsSelected(self) : _setValue(self, '');
+                _setValueAsSelected(self);
                 _hideWrappedList();
                 break;
+            case 13:
+                e.preventDefault(); // Prevent from submitting form
+                var self_last_i = self.data('inputpicker-i');
+                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
+                if ( self_last_i == self.data('inputpicker-i')){
+                    dd('_google');
+                    _toggleWrappedList();
+                }
+                else{
+                    _hideWrappedList();
+                }
+                break;
+            default:
+                _showWrappedList();
+                break;
+
 
         }
 
@@ -644,7 +718,7 @@
 
     function _eventKeyUp(e) {
         var self = $(this);
-        var wrapped_list = _showWrappedList();
+        var wrapped_list = _getWrappedList();
         if(!_isWrappedListVisible()){
             e.stopPropagation();
             e.preventDefault();
@@ -661,17 +735,6 @@
                 return;
                 break;
             case 13:    // Return
-                e.preventDefault();
-                var self_last_i = self.data('inputpicker-i');
-                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
-                if ( self_last_i == self.data('inputpicker-i')){
-                    dd('toggle');
-                    _getWrappedList().toggle();
-                }
-                else{
-                    dd('bbbbbb');
-                    _hideWrappedList();
-                }
                 break;
             case 9:     // Tab
                 break;
@@ -691,7 +754,6 @@
         _filterValue(self);
 
         // Check if has not selected, selected the first as default
-        var wrapped_list = _getWrappedList();
         var wrapped_elements = _getWrappedListElements();
         if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
             wrapped_list.find('.selected').removeClass('selected');
@@ -713,12 +775,12 @@
     // -------------------------------------------------------------------------------------------
     $.fn.inputpicker = function (method) {
         if(!this.length) return this;
-        if(methods[method]){
-            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-        }
-        else if(typeof method == 'object' || !method){
+        if(typeof method == 'object' || !method){
             return methods.init.apply(this, arguments);
 
+        }
+        else if(methods[method]){
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         }
         else { $.error("Method "+ method + " does not exist on jQuery.inputpicker"); }
     }
@@ -754,19 +816,19 @@
          * (Sting) - 'value'
          * (Object) - {name:'value', text:'Value'}
          */
-        fields: [
-            'value'
-        ],
-
-        /**
-         * The field shown in the input
-         */
-        fieldText :'value',
+        fields: [],
 
         /**
          * The field posting to the field
          */
         fieldValue: 'value',
+
+        /**
+         * The field shown in the input
+         * Will use fieldValue if empty
+         */
+        fieldText :'',
+
 
         // filter Setting
 
@@ -792,6 +854,11 @@
 
         limit: 0,
 
+
+        listBackgroundColor: '',
+        listBorderColor: '',
+        rowSelectedBackgroundColor: '',
+        rowSelectedFontColor : '',
 
 
 

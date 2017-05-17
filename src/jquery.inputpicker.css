@@ -35,6 +35,7 @@
 .inputpicker-wrapped-list {
     margin:0;
     background-color:#ffffff;
+    z-index: 10000;
 }
 
 .inputpicker-wrapped-list {
