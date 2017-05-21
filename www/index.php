@@ -46,10 +46,6 @@ $('#test').inputpicker({
     data:[ \"Text 1\", \"Text 2\", \"Text 3\" ]
 });
 </script>
-
-
-	<link rel=\"stylesheet\" href=\"./jquery.inputpicker.css\" />
-	<script src=\"./jquery.inputpicker.js\"></script>
 ");
 								?></code></pre>
                     </div>
@@ -57,7 +53,11 @@ $('#test').inputpicker({
                         $(function () {
                             $('#test<?php echo $test_index ?>').inputpicker({
                                 data:[ "Text 1", "Text 2", "Text 3" ]
-                            });
+
+                                ,limit:2
+                                ,autoOpen:true
+                                ,filterOpen: true
+                            }).focus();
                         });
                     </script>
 
@@ -177,14 +177,15 @@ $('#test').inputpicker({
 
                 <a name="remote"></a>
                 <h2>Remote data</h2>
-                <!-- Begin section 1 -->
-				<?php $test_index++; ?>
+
+                <!-- Begin section 5 -->
+	            <?php $test_index++; ?>
                 <section class="row">
                     <div class="col-sm-12">
                         <a name="remote-json"></a>
-                        <h3>JSON</h3>
+                        <h3>JSON - Remote Search</h3>
                         <p>
-                            Load JSON file <a href="<?php echo $ip_src ?>example-regions.json" target="_blank">regions.json</a> and parse it into the list
+                            Send keyword to the remote source and parse it into the list
                         </p>
                         <h4>Example</h4>
                         <div class=" ">
@@ -194,34 +195,30 @@ $('#test').inputpicker({
                         <pre><code class="html"><?php echo ip_html("<input class=\"form-control\" id=\"test\" value=\"Text 2\" />
 <script>
 $('#test').inputpicker({
-    url: '". $ip_src ."example-regions.json',
+    url: './example-json.php',
     fields:['id','name','hasc'],
     fieldText:'name',
-    fieldValue:'id'
+    fieldValue:'id',
+    filterOpen: true
 });
 </script>
 ");
-								?></code></pre>
+					            ?></code></pre>
                     </div>
                     <script>
                         $(function () {
                             $('#test<?php echo $test_index ?>').inputpicker({
 
-//                                url: '<?php echo $ip_src ?>example-districts.json'
-                                url: '<?php echo $ip_src ?>example-regions.json',
-//                                url: '<?php echo $ip_src ?>example-regions.json',
+                                url: './example-json.php',
                                 fields:['id','name','hasc'],
                                 fieldText:'name',
-                                fieldValue:'id',
-                                limit: 10,
-                                headShow : false
+                                fieldValue:'id'
                             });
                         });
                     </script>
 
                 </section>
                 <!-- End Section -->
-
 
 
             </div>

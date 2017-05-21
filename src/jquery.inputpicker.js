@@ -21,197 +21,300 @@
         init: function (options) {
             return this.each(function () {
                 var original = $(this);
+                var input;   // Shadow input
+                // Check if has been initiated
+                if (original.hasClass('inputpicker-original')){
+                    input = _i(original);
+                }
+                else{
+                    var uuid = _generateUid();
+                    original.data('inputpicker-uuid', uuid);
 
-                // Generate UUID
-                if (original.data('inputpicker-uuid')){
-                    return false;   // has been initiated
+                    // Clone input
+                    var input = original.clone();
+
+                    // Initiate input
+                    input.val('').data('inputpicker-uuid', uuid).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
+
+                    // Inputpicker div ( wrap fake input and arrow )
+                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>").append(input);
+                    original.after(inputpicker_div);
+
+                    // Add Classes to the original element
+                    original
+                        .addClass('inputpicker-original')
+                        .addClass('inputpicker-original-' + uuid)
+                        .attr('tabindex', -1)
+                        .data('inputpicker-input', input)
+                        .data('inputpicker-original-css', {
+                            'position' : original.css('position')
+                        })
+                        .css({
+                            'position' : 'fixed',
+                            'top' : '-10000px'
+                        });
+
+                    input.data('inputpicker-original', original)
+                        .prop('autocomplete', 'off');
+
                 }
 
-                var uuid = _generateUid();
-                original.data('inputpicker-uuid', uuid);
-
-                // Clone input
-                var self = original.clone();
-
-                // Add Classes to the original element
-                original.addClass('inputpicker-original');
-                original.addClass('inputpicker-original-' + uuid);
-
-                // Initiate Self
-                self.val('').data('inputpicker-uuid', uuid).data('inputpicker-i', -1).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
-
-                // Inputpicker div
-                var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\"></div>").append(self);
-
-                // $('#inputpicker-" + uuid + "').inputpicker('toggle');
-                inputpicker_div.append("<span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$('#inputpicker-" + uuid + "').inputpicker('arrow');event.stopPropagation();\"><b></b></span>");
-
-                original.after(inputpicker_div);
-                original.prop('type', 'hidden');
-
-                // Settings
-
-
-                // Add arrow for self
+                // Start loading Settings -----------------------
                 // Pick up settings from data attributes
                 var _options = [];
                 for(var k in $.fn.inputpicker.defaults){
-                    if(self.data(k)){
-                        _options[k] = self.data(k);
+                    if(input.data(k)){
+                        _options[k] = input.data(k);
                     }
                 }
 
-                // History settings
+                // Merge settings by orders: 1.options > 2 attr > 3.defaults
+                // If option is array, set it as data
                 var settings = $.extend({}, $.fn.inputpicker.defaults, _options,  Array.isArray(options) ? {data:options} : options);
 
-                // Check data
-                if(!Array.isArray(settings['data'])){
-                    throw "The type of data(" + ( typeof settings['data'] ) + ") is incorrect in inputpicker.init().";
-                }
-
-                // Change ["a", "b"] to [{value:"a"}, {value:"b"}]
-                if (settings['data'].length && typeof settings['data'][0] != 'object'){
-                    var data = [];
-                    for(var i in settings['data']){
-                        data.push({value:settings['data'][i]});
-                    }
-                    settings['data'] = data;
-                }
-
+                // Set default value for fieldText
                 if(!settings['fieldText'])  settings['fieldText'] = settings['fieldValue'];
 
+                // Set default value for fields
                 if (!settings['fields'].length){
                     settings['fields'].push(settings['fieldText']);
                 }
 
+                input.data('inputpicker-settings', settings);
 
+                // _set(input, settings);
 
+                // End loading settings -------------------------
 
-                self.data('inputpicker-original', original);
-                self.data('inputpicker-settings', settings);
-                self.prop('autocomplete', 'off');
+                // Start events handlers
 
-                // Events
-                self.on( 'focus.inputpicker', _eventFocus);
-                self.on( 'blur.inputpicker', _eventBlur);
-                self.on('keydown.inputpicker', _eventKeyDown);
-                self.on('keyup.inputpicker', _eventKeyUp);
-                self.on('change.inputpicker', _eventChange);
+                // Original events
+                original.on('focus', function(){
+                    var original = $(this);
+                    var input = _i(original);
+                    input.trigger('focus');
+
+                }).on('change', function () {
+                    var original = $(this);
+                    var input = _i(original);
+                    // dd(['on Change original:' + original.val(), original] );
+                    _setValue(input, original.val());
+                });
+
+                // input Events
+                input.on( 'focus.inputpicker', _eventFocus)
+                    .on( 'blur.inputpicker', _eventBlur)
+                    .on('keydown.inputpicker', _eventKeyDown)
+                    .on('keyup.inputpicker', _eventKeyUp);
 
                 // Load data and set value
-                if (_getSetting(self, 'url')){
-                    _execJSON(self, {
-                        fieldValue: _getSetting(self, 'fieldValue'),
-                        value: original.val(),
-                    },function (ret) {
-                        if(ret['msg'])  alert(ret['msg']);
-                        else{
-                            var data = ret['data'];
-                            _setSetting(self, 'data', data);
-                            _setValue(self, original.val());
-                        }
-                    });
-                }
-                else{
-                    _setValue(self, original.val());
-                }
-
+                _loadData(input, settings['data'], function (input) {
+                    _setValue(input, original.val());
+                });
             })
         },
 
         destroy: function (options) {
             return this.each(function () {
-                var self = $(this);
-                self.removeClass('inputpicker-input');
-                self.removeData('inputpicker-settings');
+                var input = _i($(this));
+                input.removeClass('inputpicker-input');
+                input.removeData('inputpicker-settings');
             })
         },
 
-        // setting: function (name) {
-        //     var self = $(this).get(0);
-        //     var settings = self.data('settings');
-        //     dd(settings);
-        // },
-
-        data: function (data) {
-            return this.each(function () {
-                var self = $(this);
-                _setSetting(self, 'data', data);
-            });
-        },
-
-        arrow: function (e) {
-            //_eventFocus
-            return this.each(function () {
-                var self = $(this);
-                if( _isWrappedListVisible(self) ) {
-                    _hideWrappedList();
-                }
-                else if(self.is(":focus")){ // Does not need?
-                    methods.show(null, self);
-                }
-                else{
-                    self.focus();
-
-                }
-                // Check if is current object
-                // _toggleWrappedList();
-            });
-        },
-
-        // Events
-        show: function (e, t) {
-            var self = typeof t == 'undefined' ? $(this) : t;
-            var uuid = self.data('inputpicker-uuid');
-
-            // Check if readonly
-            if (self.prop('readonly')){
-                dd('readonly');
-                return;
+        /**
+         * Get / Set options
+         * @param k
+         * @param v
+         * @returns {*}
+         */
+        option: function (k, v) {
+            var input = _i($(this));
+            if (typeof k == 'undefined' && typeof v == 'undefined'){
+                return _set(input);
             }
-
-            if (!_isInputVisible(self)){
-                dd('!_isInputVisible(self)');
-                return;
-            }
-
-            // Check
-
-
-            var url = _getSetting(self, 'url');
-            if (typeof url != 'undefined' && url){
-
-                _execJSON(self, function (ret) {
-                    if(ret['msg'])  alert(ret['msg']);
-                    else{
-                        var data = ret['data'];
-                        _setSetting(self, 'data', data);
-                        _render(self, data);
-                    }
-                });
+            if (typeof v == 'undefined'){
+                return _set(input, k);
             }
             else{
-                _render(self);
+                return _set(input, k, v);
             }
         },
 
-        eventClickArrow: function(e){
-            alert(1);
+        /**
+         * Get / Set data
+         * @param data
+         * @returns {*}
+         */
+        data: function (data) {
+            if (typeof data == 'undefined'){
+                return _set(_i($(this)), 'data');
+            }
+            else{
+                return this.each(function () {
+                    var input = _i($(this));
+                    if ( data = _formatData(data) ){
+                        _error('set data failed, the format is incorrect');
+                    }
+                    _set(input, 'data', data);
+                });
+            }
+        },
+
+        /**
+         * Show or hide the input
+         */
+        toggle: function (e) {
             return this.each(function () {
-                dd($(this).html());
-                $('#inputpicker-' + $(this).data('uuid')).focus();
-                event.stopPropagation();
+                var input = _i($(this));
+                if( _isWrappedListVisible(input) ) {
+                    methods.hide.call(input, e);
+                }
+                else{
+                    if(input.is(":focus")) {    // has focus, only need to show
+                        methods.show.call(input, e);
+                    }
+                    else{   // not focused yet, check if need show after focus
+                        input.focus();
+                        if (!_set(input, 'autoOpen')){  // not autoOpen, need to open manually
+                            methods.show.call(input, e);
+                        }
+                    }
+                }
             });
+        },
 
-        }
+        /**
+         * Show the input
+         * @param e
+         * @returns {*}
+         */
+        show: function (e) {
+            return this.each(function () {
+                var input = _i($(this)) ;
+                var uuid = _uuid(input);
 
+                // Check the input is visible
+                if (!_isInputVisible(input)) {
+                    _alert('input[name=' + _name(input) + '] is not visible.');
+                    return;
+                }
+                // else if( _uuid(_getWrappedList()) == uuid){
+                //     dd('_getWrappedList().show()');
+                //     _getWrappedList().show();
+                // }
+                else{
+                    dd('_render');
+                    _getWrappedList(input).show();
+                    _render(input);
+                }
+            });
+        },
+
+        hide: function (e) {
+            _hideWrappedList();
+            // return this.each(function () {
+            //     var input = $(this);
+            // });
+        },
+
+
+        /**
+         * Change the value and trigger change
+         * @param value
+         */
+        val: function (value) {
+            return this.each(function () {
+                var original = _o($(this));
+                var input = _i(original);
+                _setValue(input, value);
+                original.trigger('change');
+            });
+        },
+
+        // /**
+        //  * Add change function
+        //  * @param func
+        //  */
+        // change: function (func) {
+        //     return this.each(function () {
+        //         var original = $(this);
+        //         original.on('change', func);
+        //     });
+        // }
+
+
+        debug: true
     };
 
-    // ---------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------
+    function dd() {
+        var args = Array.prototype.slice.call(arguments);
+        console.log(args.length == 1 ? args[0] : args);
+    }
 
-    function _execJSON(self, param, func) {
-        var uuid = self.data('inputpicker-uuid');
-        var url = _getSetting(self, 'url');
+    function _debug(input){
+        if(methods.debug){
+            var args = Array.prototype.slice.call(arguments);
+            var pre = 'inputpicker(' + _uuid(input);
+            if(_o(input))   {
+                pre += '--' + _o(input).attr('name');
+            }
+            if(arguments.callee.caller.name){
+                pre += '--' +  arguments.callee.caller.name;
+            }
+            args.unshift( pre + ')');
+            dd(args);
+        }
+    }
+
+    // get Input name
+    function _name(input) {
+        return _o(input).attr('name');
+    }
+
+    function _error(msg, input) {
+        if(typeof input != 'undefined'){
+            var original = _o(input);
+            if(original){
+                if(original.attr('name')){
+                    msg += " for input[name=" + original.attr('name') + "]";
+                }
+                else if(original.attr('id')){
+                    msg += " for input[id=" + original.attr('id') + "]";
+                }
+            }
+        }
+        throw msg + " in inputpicker.js";
+    }
+
+    function _alert(msg) {
+        alert(msg);
+    }
+
+    // Check data and format it
+    function _formatData(fieldValue, data) {
+        if(!Array.isArray(data)){
+            return false;
+        }
+        if (data.length && typeof data[0] != 'object') {
+            var new_data = [];
+            for (var i in data) {
+                var o = {};
+                o[fieldValue] = data[i];
+                new_data.push(o);
+            }
+            data = new_data;
+            new_data = null;
+        }
+        return data;
+    }
+
+    // Load remote json data
+    function _execJSON(input, param, func) {
+        var original = _o(input);
+        var uuid = _uuid(input);
+        var url = _set(input, 'url');
 
         if (typeof func == 'undefined'){
             func = param;
@@ -219,16 +322,23 @@
         }
 
         $.get(url, $.extend({
-            q: self.val(),
+            q: input.val(),
             qo: $('.inputpicker-original-' + uuid).val(),
-            limit : _getSetting(self, 'limit')
-        }, param), func);
+            limit : _set(input, 'limit'),
+            fieldValue: _set(input, 'fieldValue'),
+            value: original.val()
+        }, param), func, "json");
     }
 
-
-    function _initWrappedList(self) {
+    /**
+     * Get wrapped list
+     * If div wrapped list doest not exist, initiate it
+     * If input is not undefined, init it.
+     * @returns {*|null}
+     * @private
+     */
+    function _getWrappedList(input) {
         if ( !$.fn.inputpicker.wrapped_list){
-            // $.fn.inputpicker.divResult = $("<div id=\"inputpicker-list\" style=\"position:absolute;left:-1000px;top:-1000px;\"></div>");//border:1px solid #888;width:100px;height:200px;
             $.fn.inputpicker.wrapped_list = $('<div />', {
                 id: 'inputpicker-wrapped-list',
                 tabindex: -1,
@@ -240,10 +350,9 @@
             }).addClass('inputpicker-wrapped-list').data('inputpicker-uuid', 0).appendTo(document.body);
 
             $(document).on('click', function (e) {
-                if(($(e.target).hasClass('inputpicker-input'))){
-                    return;
+                if(!($(e.target).hasClass('inputpicker-input'))){
+                    _hideWrappedList();
                 }
-                _hideWrappedList();
             });
 
             $.fn.inputpicker.wrapped_list.on('click', function (e) {
@@ -252,63 +361,94 @@
             });
         }
 
-        // Reset if
-        if ( $.fn.inputpicker.wrapped_list.data('inputpicker-uuid') != self.data('inputpicker-uuid')){
-            $.fn.inputpicker.wrapped_list.data('inputpicker-uuid', self.data('inputpicker-uuid')).html("");
+        if (typeof input != 'undefined'){
+            // Reset setting for wrapped list
+            if ( $.fn.inputpicker.wrapped_list.data('inputpicker-uuid') != input.data('inputpicker-uuid')){
+                $.fn.inputpicker.wrapped_list.data('inputpicker-uuid', _uuid(input)).html("");
+            }
         }
         return $.fn.inputpicker.wrapped_list;
-        // var list = $("<div class=\"inputpicker-list\" style=\"position:absolute;left:" + left + "px;top:"+ top + "px;border:1px solid #888;width:100px;height:200px;\"></div>");
+
     }
 
-
-    function _getSettings(self) {
-        return self.data('inputpicker-settings') ;
+    // Get the original input
+    function _o(input) {
+        return input.data('inputpicker-original') ? input.data('inputpicker-original') : input;
     }
 
-    function _getSetting(self, name) {
-        var settings = _getSettings(self) ;
-        // return ( settings && settings[name] ) ? settings[name] : null;
-        return settings[name];
+    // Get the target input
+    function _i(original) {
+        return original.data('inputpicker-input') ? original.data('inputpicker-input') : original ;
     }
 
-    function _setSetting(self, name, value) {
-        var settings = {};
-
-        if (typeof name == 'object'){
-            settings = name;
-        }
-        else{
-            settings = _getSettings(self);
-            settings[name] = value;
-        }
-        self.data('inputpicker-settings', settings);
+    function _uuid(o) {
+        return o.data('inputpicker-uuid');
 
     }
 
     /**
-     * Search Wrapped List and hide un-matched rows
-     * @param self
+     * Get / Set settings
+     * Do not use it to set data, use _loadData
+     * @param input
+     * @param name
+     * @param value
+     * @returns {*}
      * @private
      */
-    function _filterValue(self) {
-        var wrapped_list = _getWrappedList(self);
-        var uuid = self.data('inputpicker-uuid');
-        var settings = _getSettings(self);
-        var fields = _getSetting(self, 'fields');
-        var fieldValue = _getSetting(self, 'fieldValue');
+    function _set(input, name, value) {
+        var settings = input.data('inputpicker-settings') ;
+        if (typeof value == 'undefined'){
+            if (typeof name == 'undefined'){    // get all settings
+                return settings;
+            }
+            else if( typeof name == 'object'){  // set all settings
+                input.data('inputpicker-settings', name);
+            }
+            else{
+                return settings[name];  // get setting
+            }
+        }
+        else{   // set setting
+            // if (name == 'data'){ // special check for "data"
+            //     if( value = _formatData(input, value) ){
+            //         settings[name] = value;
+            //     }
+            //     else{
+            //         // Nothing to do
+            //     }
+            // }
+            // else{
+                settings[name] = value;
+            // }
+            input.data('inputpicker-settings', settings);
+        }
+    }
+
+    /**
+     * Replaced by _filterData
+     * Search Wrapped List and hide un-matched rows
+     * @param input
+     * @private
+    function _filterValue(input) {
+        var wrapped_list = _getWrappedList(input);
+        var uuid = _uuid(input);
+        var settings = _set(input);
+        var fields = _set(input, 'fields');
+        var fieldValue = _set(input, 'fieldValue');
         var filterOpen = settings['filterOpen'];
         var filterType = settings['filterType'];
         var filterField = settings['filterField'];
-        var data = _getSetting(self, 'data');
+        var data = _set(input, 'data');
         var original_value = $('.inputpicker-original-' + uuid).val();
-        var original_value_low = original_value.toLowerCase();
+        var original_value_low = original_value.toString().toLowerCase();
         var value = $('#inputpicker-' + uuid).val();
-        var value_low = value.toLowerCase();
+        var value_low = value.toString().toLowerCase();
         var isShown;
 
         if (!filterOpen || !value_low || !_isWrappedListVisible() || wrapped_list.data('inputpicker-uuid') != uuid){
             return;
         }
+
         _getWrappedListElements().each(function () {
             var i = $(this).data('i');
 
@@ -319,7 +459,7 @@
             // Check if need to be shown
             if (typeof filterField == 'string' && filterField) // Search specific field
             {
-                var fieldValue = data[i][filterField].toLowerCase();
+                var fieldValue = data[i][filterField].toString().toLowerCase();
                 if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
                     isShown = true;
                 }
@@ -332,8 +472,10 @@
                     filterField = [];
                     for(var k in fields)    filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k] );
                 }
+
+
                 for (var k in filterField) {
-                    var fieldValue = data[i][filterField[k]].toLowerCase();
+                    var fieldValue = data[i][filterField[k]].toString().toLowerCase();
                     if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
                         isShown = true;
                     }
@@ -347,44 +489,94 @@
         });
 
     }
+     */
+
+    function _filterData(input) {
+        var data = _formatData(input, methods.data.call(input));
+        var fields = _set(input, 'fields');
+        var fieldValue = _set(input, 'fieldValue');
+        var filterType =  _set(input, 'filterType');
+        var filterField =  _set(input, 'filterField');
+        var input_value = input.val();
+        var input_value_low = input_value.toString().toLowerCase();
+
+        // var limit = _set(input, 'limit');
+        // var page = ( typeof page == 'undefined' || page < 1 ) ? 1 : parseInt(page);
+        // dd(data, limit, page);
+
+        if (!_set(input, 'filterOpen') || !input_value_low || _set(input, 'url') || !_isArray(data) ){
+            return data;
+        }
+
+        var new_data = [];
+        for(var i = 0; i < data.length; i++){
+            isShown = false;
+
+            if (typeof filterField == 'string' && filterField) // Search specific field
+            {
+                var fieldValue = data[i][filterField].toString().toLowerCase();
+                if (filterType == 'start' && fieldValue.substr(0, input_value_low.length) == input_value_low) {
+                    isShown = true;
+                }
+                else if (fieldValue.indexOf(input_value_low) != -1) {
+                    isShown = true;
+                }
+            }
+            else {
+                if (typeof filterField != 'array' && typeof filterField != 'object') {
+                    filterField = [];
+                    for(var k in fields)    filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k] );
+                }
+
+                for (var k in filterField) {
+                    var fieldValue = data[i][filterField[k]].toString().toLowerCase();
+                    if (filterType == 'start' && fieldValue.substr(0, input_value_low.length) == input_value_low) {
+                        isShown = true;
+                    }
+                    else if (fieldValue.indexOf(input_value_low) != -1) {
+                        isShown = true;
+                    }
+                }
+            }
+
+            if(isShown) new_data.push(data[i]);
+        }
+        return new_data;
+    }
 
     /**
      * Draw the results list
-     * @param self
+     * @param input
      * @private
      */
-    function _render(self, data) {
-        var wrapped_list = _initWrappedList(self);
-        _showWrappedList();
-        var uuid = self.data('inputpicker-uuid');
-        var settings = _getSettings(self);
-        if(typeof data == 'undefined'){
-            data = _getSetting(self, 'data');
-        }
-
-        var fields = _getSetting(self, 'fields');
-        var fieldValue = _getSetting(self, 'fieldValue');
+    function _render(input) {
+        var wrapped_list = _getWrappedList(input);
+        var uuid = _uuid(input);
+        var settings = _set(input);
+        // var data = _set(input, 'data');
+        var data = _filterData(input);
+        var fields = _set(input, 'fields');
+        var fieldValue = _set(input, 'fieldValue');
         var filterOpen = settings['filterOpen'];
         var filterType = settings['filterType'];
         var filterField = settings['filterField'];
-        var value = $('.inputpicker-original-' + uuid).val();
-
-        var left = self.offset().left , //+ self.outerWidth()
-            top = self.offset().top + self.outerHeight();
-        var width, height;
-
+        var value = _o(input).val();
+        var left = input.offset().left , //+ input.outerWidth()
+            top = input.offset().top + input.outerHeight();
         var html_table = "";
         var tmp, tmp1, tmp2;
 
+        var width, height;
         if ( settings['width'].substr(-1) == '%'){
             var p = parseInt(settings['width'].slice(0, -1));
-            width = parseInt(100 * self.outerWidth() / p);
+            width = parseInt(100 * input.outerWidth() / p);
         }
         else{
-            width = settings['width'] ? settings['width'] : self.outerWidth();
+            width = settings['width'] ? settings['width'] : input.outerWidth();
         }
         height = settings['height'];
 
+        // Change the list position
         wrapped_list.css({
             left: left + 'px',
             top: top + 'px',
@@ -393,31 +585,30 @@
             display: '',
         }).data('inputpicker-uuid', uuid).html('');
 
-        // CSS
-
+        // Load CSS
         html_table += "<style>";
-        if ( tmp = _getSetting(self, 'listBackgroundColor') ){
+        if ( tmp = _set(input, 'listBackgroundColor') ){
             wrapped_list.css('backgroundColor', tmp);
         }
-        if ( tmp = _getSetting(self, 'listBorderColor') ){
+        if ( tmp = _set(input, 'listBorderColor') ){
             wrapped_list.css('borderColor', tmp);
         }
 
-        tmp1 = _getSetting(self, 'rowSelectedBackgroundColor');
-        tmp2 = _getSetting(self, 'rowSelectedFontColor')
+        tmp1 = _set(input, 'rowSelectedBackgroundColor');
+        tmp2 = _set(input, 'rowSelectedFontColor')
         if ( tmp1 || tmp2 ){
             html_table += ".inputpicker-wrapped-list .table .selected{ ";
             if(tmp1)    html_table += "background-color: " + tmp1 + "; ";
             if(tmp2)    html_table += "color: " + tmp2 + "; ";
             html_table += "}";
         }
-
         html_table += "</style>";
 
+        // Draw table
         html_table += "<table class=\"table small\">" ;
 
         // Show head
-        if(_getSetting(self, 'headShow')){
+        if(_set(input, 'headShow')){
             html_table += '<thead><tr>';
             for(var i = 0; i < fields.length; i++){
                 var text = '';
@@ -438,12 +629,29 @@
             var isSelected = false;
             for(var i = 0; i < data.length; i++) {
                 isSelected = value == data[i][ fieldValue ] ? true : false;
-                html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '">';
+                html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
                 for (var j = 0; j < fields.length; j++) {
 
                     var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
-                    var v = typeof data[i][k] != 'undefined' ? data[i][k] : '';
-                    html_table += '<td>' + v + '</td>';
+                    var text = typeof data[i][k] != 'undefined' ? data[i][k] : '';
+
+                    // Check if value is empty and set it is shown value
+                    if (!text){
+                        text = '&nbsp;';
+                    }
+
+                    html_table += '<td';
+                    var html_style = "";
+                    if(_isObject(fields[j])){
+                        if(fields[j]['width']){
+                            html_style += "width:" + fields[j]['width'];
+                        }
+
+                        // ...
+                    }
+                    html_table += ' style="' + html_style + '" ';
+
+                    html_table += '>' + text + '</>';
                 }
                 html_table += '</tr>';
             }
@@ -464,26 +672,29 @@
             }).on('click', function (e) {
                 var i = $(this).data('i');
                 var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
-                var self = $('#inputpicker-' + uuid);
-                var data = _getSetting(self, 'data');
+                var input = $('#inputpicker-' + uuid);
+                var data = _set(input, 'data');
 
-                _setValue(self, data[i][ _getSetting(self, 'fieldValue') ]);
+                _setValue(input, data[i][ _set(input, 'fieldValue') ]);
                 _hideWrappedList();
+                _o(input).trigger('change');
 
             })
         });
 
 
-        // Check selected
+        // Move to the first if not selected
         var wrapped_elements = _getWrappedListElements();
         if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
             wrapped_list.find('.selected').removeClass('selected');
             wrapped_list.find('.inputpicker-wrapped-element:visible').first().addClass('selected');
         }
-    }
 
-    function _parseSettings(settings) {
-        return settings;
+        // Check and change the cursor position if necessary
+        var tr_selected = wrapped_list.find('tr.selected');
+        if ( tr_selected.length && ( ( tr_selected.position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) ) {
+            wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.data('i') * tr_selected.outerHeight());
+        }
     }
 
     // Check if the specific
@@ -492,74 +703,115 @@
         return o.offsetWidth > 0 && o.offsetHeight > 0;
     }
 
-    function _generateUid() {
-        if(!window.inputpickerUUID) window.inputpickerUUID = 0;
-        return ++window.inputpickerUUID;
+    function _isInputWriteable(input) {
+        return !input.prop('readonly');
     }
 
     /**
-     * Set value and selected
-     * @param self
+     * Load data if necessary
+     * If url, load from url
+     * Else if data is not null, load data into settings
+     * Else read data from setting
+     * @param input
+     * @private
+     */
+    function _loadData(input, data, func) {
+        var original = _o(input);
+
+        if( typeof func == 'undefined' && typeof data == 'undefined'){
+            return false;   // Nothing to do
+        }
+
+        if( typeof func == 'undefined' && typeof data == 'function'){
+            func = data;
+            data = null;
+        }
+
+        // Add a loading div for
+        input.addClass('loading').prop('disabled', true);
+        if(_isMSIE())   input.addClass('loading-msie-patch');
+
+        if (_set(input, 'url')){
+            // input.prop('disabled', true);
+            _execJSON(input, {
+            },function (ret) {
+                if(ret['msg'])  alert('Load remote data failed: ' + ret['msg'] + 'input[name='+ original.attr('name') +']');
+                else{
+                    var data = ret['data'];
+
+                    // Check and format data
+                    if (! (data = _formatData(_set(input, 'fieldValue'), data)) ){
+                        _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
+                        data = settings['data'];    // Still use old data
+                    }
+                    else{   // apply new data
+                        _set(input, 'data', data);
+                    }
+
+                    if(typeof func == 'function'){
+                        func(input);
+                    }
+
+                    input.removeClass('loading').prop('disabled', false);
+                    if(_isMSIE())   input.removeClass('loading-msie-patch');
+                }
+            });
+        }
+        else{
+            if( _isArray(data)){
+                if (! (data = _formatData(_set(input, 'fieldValue'), data)) ){
+                    _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
+                    data = settings['data'];    // Still use old data
+                }
+                else{   // apply new data
+                    _set(input, 'data', data);
+                }
+            }
+            else{
+                data = _set(input, 'data');
+            }
+
+            if(typeof func == 'function'){
+                func(input);
+            }
+
+            input.removeClass('loading').prop('disabled', false);
+            if(_isMSIE())   input.removeClass('loading-msie-patch');
+        }
+
+    }
+
+
+
+    /**
+     * Set value
+     *
+     * true - value changed
+     * false - not changed
+     *
+     * @param input
      * @param value
      * @private
      */
-    function _setValue(self, value) {
-        var uuid = self.data('inputpicker-uuid');
-        var original = $('.inputpicker-original-' + uuid);
-        var settings = _getSettings(self);
-        var data = _getSetting(self, 'data');
-        var wrapped_list = _getWrappedList();
+    function _setValue(input, value) {
+        var original = _o(input);
+        var old_original_value = original.val();
 
-        self.data('inputpicker-i', -1);
+        var fieldValue = _set(input, 'fieldValue');
+        var fieldText = _set(input, 'fieldText');
+        var data = _formatData(fieldValue, _set(input, 'data'));
         for(var i = 0; i < data.length; i++){
-            if ( data[i][ settings['fieldValue']] == value){
-                self.data('inputpicker-i', i);
-                self.val( data[i][ settings['fieldText'] ]);
-                original.val( data[i][ settings['fieldValue'] ]);
-
-                // Selected
-                if (_getWrappedList()){
-                    _getWrappedListSelectedElement().removeClass('selected');
-                    _getWrappedListElement(i).addClass('selected');
-                }
-                break;
+            if ( data[i][ fieldValue ] == value){
+                input.val( data[i][ fieldText ]);
+                original.val( data[i][ fieldValue ]);
+                return old_original_value != value;
             }
         }
-        // self.val( data[i][ settings['fieldText'] ]);
-        // original.val( data[i][ settings['fieldValue'] ]);
-    }
 
-    function _setValueAsI(self, i) {
-        var uuid = self.data('inputpicker-uuid');
-        var original = $('.inputpicker-original-' + uuid);
-        var settings = _getSettings(self);
-        var data = _getSetting(self, 'data');
-
-        if (i >= data.length || i == -1)   return false;
-
-        // Set value
-        self.data('inputpicker-i', i);
-        self.val( data[i][ settings['fieldText'] ]);
-        original.val( data[i][ settings['fieldValue'] ]);
-
-        //Set selected
-        if (_getWrappedList()){
-            _getWrappedListSelectedElement().removeClass('selected');
-            _getWrappedListElement(i).addClass('selected');
-        }
-
-        // var wrapped_list = _getWrappedList();
-        // var wrapped_elements = _getWrappedListElements();
-        // if ( _isWrappedListVisible() && wrapped_list.data('inputpicker-uuid') == uuid &&  wrapped_elements.length){
-        //     wrapped_list.find('.selected').removeClass('selected');
-        //     var tr_selected = wrapped_list.find('.inputpicker-wrapped-element-' + i);
-        //     if (tr_selected.length){
-        //         tr_selected.addClass('selected');
-        //     }
-        //
-        // }
-
-
+        // Did not find, set empty
+        input.val( '');
+        original.val( '');
+        return false;
     }
 
     /**
@@ -567,45 +819,27 @@
      * @param uuid
      * @private
      */
-    function _setValueAsSelected(self) {
-        var uuid = self.data('inputpicker-uuid');
-        var original = $('.inputpicker-original-' + uuid);
-        var settings = _getSettings(self);
-        var data = _getSetting(self, 'data');
-
-        self.data('inputpicker-i', -1);
+    function _setValueAsSelected(input) {
         var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
         if (tr_selected.length){
-            var i = tr_selected.data('i');
-            self.data('inputpicker-i', i);
-            self.val( data[i][ settings['fieldText'] ]);
-            original.val( data[i][ settings['fieldValue'] ]);
+            return _setValue(input, tr_selected.data('value'));
+        }
+        else{   // Not selected, Reset to last
+            _setValue(input, _o(input).val());
+            return false;
         }
     }
 
-    function _getWrappedList() {
-        return $.fn.inputpicker.wrapped_list;
-    }
-
-    function _isWrappedListVisible(self) {
+    function _isWrappedListVisible(input) {
         var is = $('#inputpicker-wrapped-list').is(':visible');
-        if (typeof self != 'undefined' && $('#inputpicker-wrapped-list').data('inputpicker-uuid') != self.data('inputpicker-uuid')){
+        if (is && typeof input != 'undefined' && $('#inputpicker-wrapped-list').data('inputpicker-uuid') != _uuid(input)){
             is = false ;
         }
         return is;
     }
 
     function _hideWrappedList() {
-        return _getWrappedList().hide();
-    }
-
-    function _showWrappedList() {
-        return _getWrappedList().show();
-    }
-
-    function _toggleWrappedList() {
-        _isWrappedListVisible() ? _hideWrappedList() : _showWrappedList();
-
+        return _getWrappedList() ? _getWrappedList().hide() : false;
     }
 
     function _getWrappedListElements() {
@@ -624,40 +858,43 @@
     }
 
 
-    function _eventChange(e) {
-        dd('_eventChange');
-        if(this.value === ''){
-            return;
-        }
-        // var self = $(this);
-        // dd(origin);
+    function _generateUid() {
+        if(!window.inputpickerUUID) window.inputpickerUUID = 0;
+        return ++window.inputpickerUUID;
+    }
 
+    function _isMSIE()
+    {
+        return window.navigator.userAgent.indexOf("MSIE ") > 0;
     }
 
     /**
-     *
+     * The input is focused
      * @param e
      * @private
      */
     function _eventFocus(e) {
-        var self = $(this);
-        methods.show(e, self);
-    }
-
-    function _eventBlur(e) {
-        var self = $(this);
-        var uuid = self.data('inputpicker-uuid');
-        var original = $('.inputpicker-original-' + uuid);
-
-        // Clear invalid value
-        if (self.data('inputpicker-i') == -1){
-            self.val('');
-            original.val('');
+        var input = _i($(this));
+        if(_set(input, "autoOpen")){
+            methods.show.call(input, e);
         }
     }
 
+    function _eventBlur(e) {
+        var input = _i($(this));
+        var original = _o(input);
+
+
+
+        // Clear invalid value
+        // if (input.data('inputpicker-i') == -1){
+        //     input.val('');
+        //     original.val('');
+        // }
+    }
+
     function _eventKeyDown(e) {
-        var self = $(this);
+        var input = $(this);
         var wrapped_list = _getWrappedList();
         // // Close if the wrapped list is invisible
         // if(!_isWrappedListVisible()){
@@ -666,8 +903,9 @@
         //     return;
         // }
         switch(e.keyCode){
+            case 37:    // Left
             case 38:    // Up
-                _showWrappedList();
+                methods.show.call(input, e);
                 var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                 if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
                     tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
@@ -676,8 +914,9 @@
                     }
                 }
                 break;
+            case 39:    // Down
             case 40:    // Down
-                _showWrappedList();
+                methods.show.call(input, e);
                 var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
                 if (tr_selected.next('.inputpicker-wrapped-element').length) {
                     tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
@@ -687,71 +926,82 @@
                 }
                 break;
             case 27:    // Esc
-                _setValueAsI(self, self.data('inputpicker-i'));
-                break;
-            case 9:     // Tab
-                // self.val() ? _setValueAsSelected(self) : _setValue(self, '');
-                _setValueAsSelected(self);
+                _setValue(input, _o(input).val());
                 _hideWrappedList();
                 break;
-            case 13:
+            case 13:    // Enter
                 e.preventDefault(); // Prevent from submitting form
-                var self_last_i = self.data('inputpicker-i');
-                self.val() ? _setValueAsSelected(self) : _setValue(self, '');
-                if ( self_last_i == self.data('inputpicker-i')){
-                    dd('_google');
-                    _toggleWrappedList();
-                }
-                else{
-                    _hideWrappedList();
+                methods.toggle.call(input, e);
+                if ( _setValueAsSelected(input) ){
+                    _o(input).trigger('change');
                 }
                 break;
             default:
-                _showWrappedList();
                 break;
-
-
         }
 
         dd('_eventKeyDown:' + e.keyCode);
     }
 
     function _eventKeyUp(e) {
-        var self = $(this);
+        var input = $(this);
         var wrapped_list = _getWrappedList();
-        if(!_isWrappedListVisible()){
-            e.stopPropagation();
-            e.preventDefault();
-            return;
+        // if(!_isWrappedListVisible()){
+        //     e.stopPropagation();
+        //     e.preventDefault();
+        //     return;
+        // }
+
+        if ($.inArray( e.keyCode, [37, 38, 39, 40, 27, 9, 13]) != -1 ){
+            return ;
         }
 
-        dd('asb:' + e.keyCode );
+        dd("_eventKeyUp:" + e.keyCode);
 
         switch(e.keyCode){
-            case 38:    // Up
-                return;
-                break;
-            case 40:    // Down
-                return;
-                break;
-            case 13:    // Return
-                break;
+            // case 38:    // Up
+            //     return;
+            //     break;
+            // case 40:    // Down
+            //     return;
+            //     break;
+            // case 13:    // Return
+            //     break;
             case 9:     // Tab
+                // input.val() ? _setValueAsSelected(input) : _setValue(input, '');
+                if ( _setValueAsSelected(input) ){  // Value changed
+                    _o(input).trigger('change');
+                }
+                _hideWrappedList();
                 break;
-            case 27:    // ESC
+            // case 27:    // ESC
+            //     break;
+            default:
+                // Change input value
+                if ( _set(input, 'url')){
+                    _loadData(input, function (input) {
+                        _render(input);
+                    });
+                }
+                else{
+                    if(_set(input, 'filterOpen')){  // Need to render with filtering
+                        _render(input);
+                    }
+                    else{   // show straightway
+                        methods.show.call(input, e);
+                    }
+                }
+
                 break;
         }
 
+        // if(!input.val()){    // Empty
+        //     _getWrappedListElements().each(function () {
+        //         $(this).show();
+        //     });
+        // }
 
-
-
-        if(!self.val()){    // Empty
-            _getWrappedListElements().each(function () {
-                $(this).show();
-            });
-        }
-
-        _filterValue(self);
+        // _filterValue(input);
 
         // Check if has not selected, selected the first as default
         var wrapped_elements = _getWrappedListElements();
@@ -766,10 +1016,16 @@
         // ]);
     }
 
-    function dd(d) {
-        if (true)
-            console.log(d);
+    function _isDefined(v) {
+        return typeof v != 'undefined';
+    }
 
+    function _isObject(v) {
+        return typeof v == 'object';
+    }
+
+    function _isArray(v) {
+        return Array.isArray(v);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -797,6 +1053,12 @@
          * Default Height
          */
         height: '200px',
+
+        /**
+         * Selected automatically when focus
+         */
+        autoOpen: false,
+
 
         /**
          * True - show head

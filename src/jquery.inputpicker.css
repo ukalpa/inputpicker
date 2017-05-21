@@ -57,6 +57,17 @@
 .inputpicker-wrapped-list .table .selected{
     background-color: #d9edf7;
 }
-.inputpicker-theme1 {
 
+/*.loading*/
+.inputpicker-div input.loading {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJzdmctc3Bpbm5lciIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiIHZpZXdCb3g9IjAgMCA4MCA4MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggaWQ9InNwaW5uZXIiIGZpbGw9IiM2NjY2NjYiIGQ9Ik00MCw3MkMyMi40LDcyLDgsNTcuNiw4LDQwQzgsMjIuNCwyMi40LDgsNDAsOGMxNy42LDAsMzIsMTQuNCwzMiwzMmMwLDEuMS0wLjksMi0yLDJzLTItMC45LTItMmMwLTE1LjQtMTIuNi0yOC0yOC0yOFMxMiwyNC42LDEyLDQwczEyLjYsMjgsMjgsMjhjMS4xLDAsMiwwLjksMiwyUzQxLjEsNzIsNDAsNzJ6Ij48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVUeXBlPSJ4bWwiIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0icm90YXRlIiBmcm9tPSIwIDQwIDQwIiB0bz0iMzYwIDQwIDQwIiBkdXI9IjAuOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiAvPjwvcGF0aD48L3N2Zz4=');
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+    background-position:right 5px center;
 }
+
+.inputpicker-div input.loading-msie-patch {
+    background-image: url("./res/spinner.gif");
+}
+

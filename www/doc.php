@@ -67,16 +67,27 @@
 										</ul>
 									</td>
 								</tr>
-								<tr>
-									<td>height</td>
-									<td>String</td>
-									<td>Set height for the list</td>
-									<td>
-										<ul class="list-unstyled">
-											<li>"200px" - 200px</li>
-										</ul>
-									</td>
-								</tr>
+                                <tr>
+                                    <td>height</td>
+                                    <td>String</td>
+                                    <td>Set height for the list</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>"200px" - 200px</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>autoOpen</td>
+                                    <td>Bool</td>
+                                    <td>The list would / would not open when the input is focused</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>true - Open automatically</li>
+                                            <li>false - Not open</li>
+                                        </ul>
+                                    </td>
+                                </tr>
 								<tr>
 									<td>headShow</td>
 									<td>Bool</td>
@@ -138,7 +149,7 @@
 									<td>data</td>
 									<td>Array</td>
 									<td>Set data for the list
-										<div class="alert alert-info small alert-message" role="alert">Will be invalid when "url" is not empty.</div>
+										<div class="alert alert-info small alert-message" role="alert">Only valid when "url" is empty.</div>
 									</td>
 									<td>
 										<ul class="list-unstyled">
