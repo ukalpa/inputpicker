@@ -23,8 +23,19 @@
 			<div class="col-sm-3 pull-right hidden-xs hidden-sm">
 				<div class="ip-side-bar">
 					<ul class="nav nav-pills nav-stacked ip-side-nav" data-spy="affix" data-offset-top="55">
-						<li><a href="#options">Options</a>
+						<li>
+                            <a href="#options">Options</a>
+                            <ul class="nav">
+                                <li>
+                                    <a href="#options-basic">Basic</a>
+                                    <a href="#options-data">Data</a>
+                                    <a href="#options-url">Remote Url</a>
+                                </li>
+                            </ul>
 						</li>
+                        <li>
+                            <a href="#events">Events</a>
+                        </li>
 						<li><a href="#html">HTML</a>
 						</li>
 						<li><a href="#css">CSS</a>
@@ -35,16 +46,14 @@
 			<div class="col-sm-9">
 				<div class="ip-content" style="">
 
-					<!-- Start examples-->
 					<a name="options"></a>
 					<h2>Options</h2>
-					<!-- Begin section 1 -->
-					<?php $test_index++; ?>
 					<section class="row">
 						<div class="col-sm-12">
 							<p>
 								Initiate a basic input with multiple options
 							</p>
+                            <a name="options-basic"></a>
 							<h3>Basic</h3>
 							<table class="table table-bordered">
 								<thead>
@@ -133,47 +142,85 @@
 								</tbody>
 							</table>
 
-
-							<h3>Data</h3>
-							<table class="table table-bordered">
-								<thead>
-								<tr class="active">
-									<th>Name</th>
-									<th>Format</th>
-									<th>Description</th>
-									<th style="width:50%;">Example</th>
-								</tr>
-								</thead>
-								<tbody>
-								<tr>
-									<td>data</td>
-									<td>Array</td>
-									<td>Set data for the list
-										<div class="alert alert-info small alert-message" role="alert">Only valid when "url" is empty.</div>
-									</td>
-									<td>
-										<ul class="list-unstyled">
-											<li>["a", "b", "c"]</li>
-											<li>[{"value":"AKL", "text":"Auckland", "country":"NZ"}, {"value":"WLG", "text":"Wellington", "country":"NZ"}]</li>
-										</ul>
-									</td>
-								</tr>
-								<tr>
-									<td>url</td>
-									<td>String</td>
-									<td>Set remote data source for the list
-									</td>
-									<td>
-										<ul class="list-unstyled">
-											<li>"../src/example-regions.json"</li>
-										</ul>
-									</td>
-								</tr>
-								</tbody>
-							</table>
+                            <a name="options-data"></a>
+                            <h3 class="inline-block">Data</h3>
+                            <div class="inline-block alert alert-info small alert-message ml10" role="alert" >Only valid when "url" is empty.</div>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Format</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>data</td>
+                                    <td>Array</td>
+                                    <td>Set data for the list
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>["a", "b", "c"]</li>
+                                            <li>[{"value":"AKL", "text":"Auckland", "country":"NZ"}, {"value":"WLG", "text":"Wellington", "country":"NZ"}]</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
 
 
-							<h3>Filter</h3>
+                            <a name="options-data"></a>
+                            <h3>Remote Url</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Format</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>url</td>
+                                    <td>String</td>
+                                    <td>Set remote data source for the list
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>"../src/example-regions.json"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>urlParam</td>
+                                    <td>Object</td>
+                                    <td>Set specific parameters of url for reading remote data
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>{"category_id":1, "country", "NZ"}</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>urlDelay</td>
+                                    <td>Int</td>
+                                    <td>Set seconds of delaying to read remote data
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>3 - start getting remote data after having completed to input keywords 3 seconds later </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+
+                            <h3>Filter</h3>
 							<table class="table table-bordered">
 								<thead>
 								<tr class="active">
@@ -221,16 +268,53 @@
 								</tbody>
 							</table>
 						</div>
-						<script>
-                            $(function () {
-                                $('#test<?php echo $test_index ?>').inputpicker({
-                                    data:[ "Text 1", "Text 2", "Text 3" ]
-                                });
-                            });
-						</script>
-
 					</section>
 					<!-- End Section -->
+
+
+
+                    <a name="events"></a>
+                    <h2>Events</h2>
+                    <section class="row">
+                        <div class="col-sm-12">
+                            <p>
+                                The list of Events handlers
+                            </p>
+                            <a name="options-basic"></a>
+                            <h3>Basic</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>focus(e)</td>
+                                    <td>Focus on the input</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>$('#test').focus()</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>change(e)</td>
+                                    <td>Activate after updating of the input</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>$('#test').change(function(input){ //... })</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+
 
 
 					<!-- Start examples-->

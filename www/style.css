@@ -53,9 +53,13 @@ header .nav li.active a {
 .affix {
     top:0px;
 }
+
+.ml10 {margin-left:10px;}
+.mr10 {margin-right:10px;}
 .mt10 {margin-top:10px;}
 .mt20 {margin-top:20px;}
 
+.inline-block { display: inline-block; }
 section {
     margin-bottom:20px;
 }

@@ -80,9 +80,8 @@
                     settings['fields'].push(settings['fieldText']);
                 }
 
-                input.data('inputpicker-settings', settings);
-
-                // _set(input, settings);
+                // input.data('inputpicker-settings', settings);
+                _set(input, settings);
 
                 // End loading settings -------------------------
 
@@ -114,6 +113,25 @@
             })
         },
 
+        /**
+         * Load data again when having changed url or params
+         * @param func - callback
+         */
+        loadData: function (data, func) {
+            return this.each(function () {
+                var input = _i($(this));
+                _loadData(input, data, function (input) {
+                    _setValue(input, _o(input).val());
+
+
+                    if(typeof func == 'function'){
+                        func(input);
+                    }
+                });
+
+            });
+        },
+
         destroy: function (options) {
             return this.each(function () {
                 var input = _i($(this));
@@ -128,7 +146,7 @@
          * @param v
          * @returns {*}
          */
-        option: function (k, v) {
+        set: function (k, v) {
             var input = _i($(this));
             if (typeof k == 'undefined' && typeof v == 'undefined'){
                 return _set(input);
@@ -153,10 +171,7 @@
             else{
                 return this.each(function () {
                     var input = _i($(this));
-                    if ( data = _formatData(data) ){
-                        _error('set data failed, the format is incorrect');
-                    }
-                    _set(input, 'data', data);
+                    _set(input, 'data', _formatData(_set(input, 'fieldValue'),data));
                 });
             }
         },
@@ -167,14 +182,17 @@
         toggle: function (e) {
             return this.each(function () {
                 var input = _i($(this));
-                if( _isWrappedListVisible(input) ) {
+                if( _isWrappedListVisible(input) ){
                     methods.hide.call(input, e);
+                    dd('_isWrappedListVisible');
                 }
                 else{
                     if(input.is(":focus")) {    // has focus, only need to show
                         methods.show.call(input, e);
+                        dd('input.is focus');
                     }
                     else{   // not focused yet, check if need show after focus
+                        dd('input.focus');
                         input.focus();
                         if (!_set(input, 'autoOpen')){  // not autoOpen, need to open manually
                             methods.show.call(input, e);
@@ -199,10 +217,10 @@
                     _alert('input[name=' + _name(input) + '] is not visible.');
                     return;
                 }
-                // else if( _uuid(_getWrappedList()) == uuid){
-                //     dd('_getWrappedList().show()');
-                //     _getWrappedList().show();
-                // }
+                else if( _uuid(_getWrappedList()) == uuid){
+                    dd('_getWrappedList().show()');
+                    _getWrappedList().show();
+                }
                 else{
                     dd('_render');
                     _getWrappedList(input).show();
@@ -227,8 +245,9 @@
             return this.each(function () {
                 var original = _o($(this));
                 var input = _i(original);
-                _setValue(input, value);
-                original.trigger('change');
+                if ( _setValue(input, value) ){
+                    original.trigger('change');
+                }
             });
         },
 
@@ -243,7 +262,6 @@
         //     });
         // }
 
-
         debug: true
     };
 
@@ -253,22 +271,21 @@
         console.log(args.length == 1 ? args[0] : args);
     }
 
-    function _debug(input){
-        if(methods.debug){
-            var args = Array.prototype.slice.call(arguments);
-            var pre = 'inputpicker(' + _uuid(input);
-            if(_o(input))   {
-                pre += '--' + _o(input).attr('name');
-            }
-            if(arguments.callee.caller.name){
-                pre += '--' +  arguments.callee.caller.name;
-            }
-            args.unshift( pre + ')');
-            dd(args);
-        }
-    }
+    // function _debug(input){
+    //     if(methods.debug){
+    //         var args = Array.prototype.slice.call(arguments);
+    //         var pre = 'inputpicker(' + _uuid(input);
+    //         if(_o(input))   {
+    //             pre += '--' + _o(input).attr('name');
+    //         }
+    //         if(arguments.callee.caller.name){
+    //             pre += '--' +  arguments.callee.caller.name;
+    //         }
+    //         args.unshift( pre + ')');
+    //         dd(args);
+    //     }
+    // }
 
-    // get Input name
     function _name(input) {
         return _o(input).attr('name');
     }
@@ -288,14 +305,19 @@
         throw msg + " in inputpicker.js";
     }
 
-    function _alert(msg) {
+    function _alert(msg, input) {
+        if (typeof input != 'undefined'){
+            if(_name(input)){
+                msg += ' input[name=' + _name(input) + ']';
+            }
+        }
         alert(msg);
     }
 
     // Check data and format it
     function _formatData(fieldValue, data) {
         if(!Array.isArray(data)){
-            return false;
+            return [];
         }
         if (data.length && typeof data[0] != 'object') {
             var new_data = [];
@@ -312,8 +334,6 @@
 
     // Load remote json data
     function _execJSON(input, param, func) {
-        var original = _o(input);
-        var uuid = _uuid(input);
         var url = _set(input, 'url');
 
         if (typeof func == 'undefined'){
@@ -323,11 +343,11 @@
 
         $.get(url, $.extend({
             q: input.val(),
-            qo: $('.inputpicker-original-' + uuid).val(),
             limit : _set(input, 'limit'),
             fieldValue: _set(input, 'fieldValue'),
-            value: original.val()
-        }, param), func, "json");
+            fieldText: _set(input, 'fieldText'),
+            value: _o(input).val()
+        }, _set(input, 'urlParam'), param), func, "json");
     }
 
     /**
@@ -338,16 +358,49 @@
      * @private
      */
     function _getWrappedList(input) {
-        if ( !$.fn.inputpicker.wrapped_list){
-            $.fn.inputpicker.wrapped_list = $('<div />', {
-                id: 'inputpicker-wrapped-list',
-                tabindex: -1,
+        // if ( !$.fn.inputpicker.wrapped_list){
+        //     $.fn.inputpicker.wrapped_list = $('<div />', {
+        //         id: 'inputpicker-wrapped-list',
+        //         tabindex: -1,
+        //
+        //     }).css({
+        //         'display':'none',
+        //         'position': 'absolute',
+        //         'overflow' : 'all'
+        //     }).addClass('inputpicker-wrapped-list').data('inputpicker-uuid', 0).appendTo(document.body);
+        //
+        //     $(document).on('click', function (e) {
+        //         if(!($(e.target).hasClass('inputpicker-input'))){
+        //             _hideWrappedList();
+        //         }
+        //     });
+        //
+        //     $.fn.inputpicker.wrapped_list.on('click', function (e) {
+        //         e.preventDefault();
+        //         e.stopPropagation();
+        //     });
+        // }
+        //
+        // if (typeof input != 'undefined'){
+        //     // Reset setting for wrapped list
+        //     if ( $.fn.inputpicker.wrapped_list.data('inputpicker-uuid') != input.data('inputpicker-uuid')){
+        //         $.fn.inputpicker.wrapped_list.data('inputpicker-uuid', _uuid(input)).html("");
+        //     }
+        // }
+        // return $.fn.inputpicker.wrapped_list;
 
+        var wrapped_list = $('#inputpicker-wrapped-list');
+        if ( ! wrapped_list.length){
+            wrapped_list = $('<div />', {
+                id: 'inputpicker-wrapped-list',
+                tabindex: -1
             }).css({
                 'display':'none',
                 'position': 'absolute',
                 'overflow' : 'all'
-            }).addClass('inputpicker-wrapped-list').data('inputpicker-uuid', 0).appendTo(document.body);
+            }).addClass('inputpicker-wrapped-list')
+                .data('inputpicker-uuid', 0)
+                .appendTo(document.body);
 
             $(document).on('click', function (e) {
                 if(!($(e.target).hasClass('inputpicker-input'))){
@@ -355,7 +408,7 @@
                 }
             });
 
-            $.fn.inputpicker.wrapped_list.on('click', function (e) {
+            wrapped_list.on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
             });
@@ -363,11 +416,63 @@
 
         if (typeof input != 'undefined'){
             // Reset setting for wrapped list
-            if ( $.fn.inputpicker.wrapped_list.data('inputpicker-uuid') != input.data('inputpicker-uuid')){
-                $.fn.inputpicker.wrapped_list.data('inputpicker-uuid', _uuid(input)).html("");
+            if ( _uuid(wrapped_list) != _uuid(input)){
+                _uuid(wrapped_list.html(""), _uuid(input));
             }
         }
-        return $.fn.inputpicker.wrapped_list;
+        return wrapped_list;
+
+    }
+
+    /**
+     *
+     * @param input
+     * @param offset
+     * @private
+     */
+    function _changeWrappedListSelected(input, offset) {
+        var wrapped_list = _getWrappedList();
+        var wrapped_elements = _getWrappedListElements();
+        // check if wrapped_list
+        if ( _isWrappedListVisible(input) && wrapped_elements.length){
+            // Move to the first if not selected
+
+            // Select first if not any selected
+            if ( wrapped_elements.length && _getWrappedListElements(true).length == 0){
+                wrapped_elements.first().addClass('selected');
+            }
+            else{
+                var tr_selected = _getWrappedListElements(true);
+                if (offset){    // Change selected if necessary
+                    if ( offset < 0 && tr_selected.prev().length ){
+                        tr_selected.removeClass('selected').prev().addClass('selected');
+                        if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
+                            wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
+                        }
+                    }
+                    else if (  offset > 0 && tr_selected.next().length) {
+                        tr_selected.removeClass('selected').next().addClass('selected');
+                        if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
+                            wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
+                        }
+
+
+                    }
+
+
+
+                }
+            }
+
+
+
+            // // Check and change the cursor position if necessary
+            // if ( tr_selected.length && ( ( tr_selected.position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) ) {
+            //     wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.data('i') * tr_selected.outerHeight());
+            // }
+
+        }
+
 
     }
 
@@ -381,8 +486,8 @@
         return original.data('inputpicker-input') ? original.data('inputpicker-input') : original ;
     }
 
-    function _uuid(o) {
-        return o.data('inputpicker-uuid');
+    function _uuid(o, uuid) {
+        return typeof uuid == 'undefined' ? o.data('inputpicker-uuid') : o.data('inputpicker-uuid', uuid);
 
     }
 
@@ -418,85 +523,19 @@
             //     }
             // }
             // else{
-                settings[name] = value;
+            settings[name] = value;
             // }
             input.data('inputpicker-settings', settings);
+            return input;
         }
     }
-
-    /**
-     * Replaced by _filterData
-     * Search Wrapped List and hide un-matched rows
-     * @param input
-     * @private
-    function _filterValue(input) {
-        var wrapped_list = _getWrappedList(input);
-        var uuid = _uuid(input);
-        var settings = _set(input);
-        var fields = _set(input, 'fields');
-        var fieldValue = _set(input, 'fieldValue');
-        var filterOpen = settings['filterOpen'];
-        var filterType = settings['filterType'];
-        var filterField = settings['filterField'];
-        var data = _set(input, 'data');
-        var original_value = $('.inputpicker-original-' + uuid).val();
-        var original_value_low = original_value.toString().toLowerCase();
-        var value = $('#inputpicker-' + uuid).val();
-        var value_low = value.toString().toLowerCase();
-        var isShown;
-
-        if (!filterOpen || !value_low || !_isWrappedListVisible() || wrapped_list.data('inputpicker-uuid') != uuid){
-            return;
-        }
-
-        _getWrappedListElements().each(function () {
-            var i = $(this).data('i');
-
-            isShown = false;
-
-            // Check if need to see
-            // First, the selected need to be shown
-            // Check if need to be shown
-            if (typeof filterField == 'string' && filterField) // Search specific field
-            {
-                var fieldValue = data[i][filterField].toString().toLowerCase();
-                if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
-                    isShown = true;
-                }
-                else if (fieldValue.indexOf(value_low) != -1) {
-                    isShown = true;
-                }
-            }
-            else {
-                if (typeof filterField != 'array' && typeof filterField != 'object') {
-                    filterField = [];
-                    for(var k in fields)    filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k] );
-                }
-
-
-                for (var k in filterField) {
-                    var fieldValue = data[i][filterField[k]].toString().toLowerCase();
-                    if (filterType == 'start' && fieldValue.substr(0, value_low.length) == value_low) {
-                        isShown = true;
-                    }
-                    else if (fieldValue.indexOf(value_low) != -1) {
-                        isShown = true;
-                    }
-                }
-            }
-            // dd([i + ' => ' + isShown, filterField, fieldValue, value_low]);
-            isShown ? $(this).show() : $(this).hide();
-        });
-
-    }
-     */
 
     function _filterData(input) {
-        var data = _formatData(input, methods.data.call(input));
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
         var filterType =  _set(input, 'filterType');
         var filterField =  _set(input, 'filterField');
+        var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_value_low = input_value.toString().toLowerCase();
 
@@ -509,9 +548,9 @@
         }
 
         var new_data = [];
+        var isShown;
         for(var i = 0; i < data.length; i++){
             isShown = false;
-
             if (typeof filterField == 'string' && filterField) // Search specific field
             {
                 var fieldValue = data[i][filterField].toString().toLowerCase();
@@ -624,8 +663,8 @@
         }
 
         // Show data
-        html_table += "<tbody>";
         if(data.length){
+            html_table += "<tbody>";
             var isSelected = false;
             for(var i = 0; i < data.length; i++) {
                 isSelected = value == data[i][ fieldValue ] ? true : false;
@@ -655,9 +694,14 @@
                 }
                 html_table += '</tr>';
             }
+
+            html_table += "</tbody>";
+        }
+        else{
+            html_table += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
         }
 
-        html_table += "</tbody></table>";
+        html_table += "</table>";
 
         wrapped_list.append($(html_table));
 
@@ -676,22 +720,20 @@
                 var data = _set(input, 'data');
 
                 _setValue(input, data[i][ _set(input, 'fieldValue') ]);
-                _hideWrappedList();
                 _o(input).trigger('change');
+
+                // To fix the bug of unable to close automatically in IE.
+                if (!_isMSIE()){
+                    input.focus();
+                }
+                _hideWrappedList();
 
             })
         });
 
 
-        // Move to the first if not selected
-        var wrapped_elements = _getWrappedListElements();
-        if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
-            wrapped_list.find('.selected').removeClass('selected');
-            wrapped_list.find('.inputpicker-wrapped-element:visible').first().addClass('selected');
-        }
-
         // Check and change the cursor position if necessary
-        var tr_selected = wrapped_list.find('tr.selected');
+        var tr_selected = _getWrappedListElements(true);
         if ( tr_selected.length && ( ( tr_selected.position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) ) {
             wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.data('i') * tr_selected.outerHeight());
         }
@@ -733,39 +775,43 @@
 
         if (_set(input, 'url')){
             // input.prop('disabled', true);
-            _execJSON(input, {
-            },function (ret) {
-                if(ret['msg'])  alert('Load remote data failed: ' + ret['msg'] + 'input[name='+ original.attr('name') +']');
+            var param = {};
+            if (_isObject(data)){
+                param = data;
+            }
+
+            _execJSON(input, param, function (ret) {
+                var data;
+                if(_isArray(ret)){
+                    data = ret;
+                }
                 else{
-                    var data = ret['data'];
+                    data = ret['data'];
+                }
 
-                    // Check and format data
-                    if (! (data = _formatData(_set(input, 'fieldValue'), data)) ){
-                        _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
-                        data = settings['data'];    // Still use old data
-                    }
-                    else{   // apply new data
-                        _set(input, 'data', data);
-                    }
+                // var data = ret['data'];
+                // Check and format data
+                if (! _isArray(data)  ){
+                    _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
+                    data = _set(input, 'data');    // Still use old data
+                }
+                else{   // apply new data
+                    // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data) );
+                    methods.data.call(input, data);
+                }
 
-                    if(typeof func == 'function'){
-                        func(input);
-                    }
+                input.removeClass('loading').prop('disabled', false);
+                if(_isMSIE())   input.removeClass('loading-msie-patch');
 
-                    input.removeClass('loading').prop('disabled', false);
-                    if(_isMSIE())   input.removeClass('loading-msie-patch');
+                if(typeof func == 'function'){
+                    func(input);
                 }
             });
         }
         else{
             if( _isArray(data)){
-                if (! (data = _formatData(_set(input, 'fieldValue'), data)) ){
-                    _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
-                    data = settings['data'];    // Still use old data
-                }
-                else{   // apply new data
-                    _set(input, 'data', data);
-                }
+                // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data) );
+                methods.data.call(input, data);
             }
             else{
                 data = _set(input, 'data');
@@ -799,19 +845,22 @@
 
         var fieldValue = _set(input, 'fieldValue');
         var fieldText = _set(input, 'fieldText');
-        var data = _formatData(fieldValue, _set(input, 'data'));
+        var data = _set(input, 'data');
+        if ( !data.length)  return false;   // No data
+        var index_i = -1;
         for(var i = 0; i < data.length; i++){
             if ( data[i][ fieldValue ] == value){
-                input.val( data[i][ fieldText ]);
-                original.val( data[i][ fieldValue ]);
-                return old_original_value != value;
+                index_i = i;
             }
         }
 
-        // Did not find, set empty
-        input.val( '');
-        original.val( '');
-        return false;
+        if ( index_i == -1){    // Did not find, set the first data as default value
+            index_i = 0;
+        }
+
+        input.val( data[index_i][ fieldText ]);
+        original.val( data[index_i][ fieldValue ]);
+        return old_original_value != value; // If changed
     }
 
     /**
@@ -820,42 +869,63 @@
      * @private
      */
     function _setValueAsSelected(input) {
-        var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
-        if (tr_selected.length){
+        var wrapped_list = _getWrappedList();
+        var tr_selected = _getWrappedListElements(true);
+
+        // Check if is equal
+        if (_uuid(wrapped_list) != _uuid(input)){
+            return false;
+        }
+
+        if ( tr_selected.length){
+            // dd('tr_selected.length:' , tr_selected.length);
             return _setValue(input, tr_selected.data('value'));
         }
         else{   // Not selected, Reset to last
+            // dd('_o(input).val():' , _o(input).val() );
             _setValue(input, _o(input).val());
             return false;
         }
     }
 
     function _isWrappedListVisible(input) {
-        var is = $('#inputpicker-wrapped-list').is(':visible');
-        if (is && typeof input != 'undefined' && $('#inputpicker-wrapped-list').data('inputpicker-uuid') != _uuid(input)){
-            is = false ;
+        var wrapped_list = _getWrappedList();
+        if (wrapped_list.is(':visible') && _uuid(wrapped_list) == _uuid(input)){
+            return true ;
         }
-        return is;
+        else{
+            return false;
+        }
     }
 
     function _hideWrappedList() {
         return _getWrappedList() ? _getWrappedList().hide() : false;
     }
 
-    function _getWrappedListElements() {
-        if ( !_getWrappedList() ){
-            return $([]);
+    /**
+     * Get elements
+     * @param isSelected
+     *      undefined   all elements
+     *      true        selected
+     *      false       unselected
+     * @private
+     */
+    function _getWrappedListElements(isSelected) {
+
+        var p = '.inputpicker-wrapped-element';
+        if (typeof isSelected != 'undefined' ){
+            p += isSelected ? '.selected' : ':not(.selected)';
         }
-        return $.fn.inputpicker.wrapped_list.find('.inputpicker-wrapped-element');
+        return _getWrappedList().find(p);
     }
 
-    function _getWrappedListElement(i) {
-        return _getWrappedList().find('inputpicker-wrapped-element-' + i);
-    }
-
-    function _getWrappedListSelectedElement() {
-        return _getWrappedList().find('.selected');
-    }
+    // function _getWrappedListElement(i) {
+    //     return _getWrappedList().find('inputpicker-wrapped-element-' + i);
+    // }
+    //
+    // function _getWrappedListSelectedElement() {
+    //     return _getWrappedList().find('tr.selected');
+    // }
 
 
     function _generateUid() {
@@ -865,7 +935,16 @@
 
     function _isMSIE()
     {
-        return window.navigator.userAgent.indexOf("MSIE ") > 0;
+        var iev=0;
+        var ieold = (/MSIE (\d+\.\d+);/.test(navigator.userAgent));
+        var trident = !!navigator.userAgent.match(/Trident\/7.0/);
+        var rv=navigator.userAgent.indexOf("rv:11.0");
+
+        if (ieold) iev=new Number(RegExp.$1);
+        if (navigator.appVersion.indexOf("MSIE 10") != -1) iev=10;
+        if (trident&&rv!=-1) iev=11;
+
+        return iev;
     }
 
     /**
@@ -885,6 +964,9 @@
         var original = _o(input);
 
 
+        // _hideWrappedList();
+
+
 
         // Clear invalid value
         // if (input.data('inputpicker-i') == -1){
@@ -902,31 +984,43 @@
         //     e.preventDefault();
         //     return;
         // }
+        dd( _name(input) + '._eventKeyDown:' + e.keyCode);
+
+
         switch(e.keyCode){
             case 37:    // Left
             case 38:    // Up
+                //_changeWrappedListSelected
                 methods.show.call(input, e);
-                var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
-                if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
-                    tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
-                    if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
-                        wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
-                    }
-                }
+                // var tr_selected = wrapped_list.find('tr.selected');
+                // if ( tr_selected.prev('.inputpicker-wrapped-element').length ){
+                //     tr_selected.removeClass('selected').prev('.inputpicker-wrapped-element').addClass('selected');
+                //     if (tr_selected.prev().position().top < tr_selected.outerHeight()) {
+                //         wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_selected.outerHeight());
+                //     }
+                // }
+                _changeWrappedListSelected(input, -1);
                 break;
             case 39:    // Down
             case 40:    // Down
                 methods.show.call(input, e);
-                var tr_selected = $('#inputpicker-wrapped-list').find('tr.selected');
-                if (tr_selected.next('.inputpicker-wrapped-element').length) {
-                    tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
-                    if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
-                        wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
-                    }
-                }
+                // var tr_selected = wrapped_list.find('tr.selected');
+                // if (tr_selected.next('.inputpicker-wrapped-element').length) {
+                //     tr_selected.removeClass('selected').next('.inputpicker-wrapped-element').addClass('selected');
+                //     if ( ( tr_selected.next().position().top + 2 * tr_selected.outerHeight()) > wrapped_list.outerHeight()) {
+                //         wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_selected.outerHeight());
+                //     }
+                // }
+                _changeWrappedListSelected(input, 1);
                 break;
             case 27:    // Esc
                 _setValue(input, _o(input).val());
+                _hideWrappedList();
+                break;
+            case 9:
+                if ( _setValueAsSelected(input) ){  // Value changed
+                    _o(input).trigger('change');
+                }
                 _hideWrappedList();
                 break;
             case 13:    // Enter
@@ -935,12 +1029,14 @@
                 if ( _setValueAsSelected(input) ){
                     _o(input).trigger('change');
                 }
+                else{
+                }
                 break;
             default:
+                //
                 break;
         }
 
-        dd('_eventKeyDown:' + e.keyCode);
     }
 
     function _eventKeyUp(e) {
@@ -951,69 +1047,64 @@
         //     e.preventDefault();
         //     return;
         // }
+        dd( _name(input) + '._eventKeyUp:' + e.keyCode);
 
         if ($.inArray( e.keyCode, [37, 38, 39, 40, 27, 9, 13]) != -1 ){
             return ;
         }
 
-        dd("_eventKeyUp:" + e.keyCode);
+        // Keyword changes
+        if ( _set(input, 'url')){
 
-        switch(e.keyCode){
-            // case 38:    // Up
-            //     return;
-            //     break;
-            // case 40:    // Down
-            //     return;
-            //     break;
-            // case 13:    // Return
-            //     break;
-            case 9:     // Tab
-                // input.val() ? _setValueAsSelected(input) : _setValue(input, '');
-                if ( _setValueAsSelected(input) ){  // Value changed
-                    _o(input).trigger('change');
-                }
-                _hideWrappedList();
-                break;
-            // case 27:    // ESC
-            //     break;
-            default:
-                // Change input value
-                if ( _set(input, 'url')){
-                    _loadData(input, function (input) {
-                        _render(input);
-                    });
-                }
-                else{
-                    if(_set(input, 'filterOpen')){  // Need to render with filtering
-                        _render(input);
-                    }
-                    else{   // show straightway
-                        methods.show.call(input, e);
-                    }
+            // Check if delay
+            var delay = parseFloat(_set(input, 'urlDelay'));
+            var delayHandler = _set(input, 'delayHandler');
+            if ( delayHandler ){
+                clearTimeout(delayHandler);
+                _set(input, 'delayHandler', false);
+            }
+
+
+            delayHandler = setTimeout(_loadData, delay * 1000, input, function (input) {
+                _render(input);
+                var wrapped_elements = _getWrappedListElements();
+                if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
+                    wrapped_list.first().addClass('selected');
                 }
 
-                break;
+
+                if(!input.is(":focus")) {
+                    dd('focus', input)
+                    input.focus();
+                }
+
+            } );
+            _set(input, 'delayHandler', delayHandler);
+
+
+            // _loadData(input, function (input) {
+            //     _render(input);
+            //
+            //     var wrapped_elements = _getWrappedListElements();
+            //     if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
+            //         wrapped_list.first().addClass('selected');
+            //     }
+            //
+            // });
         }
+        else{
+            if(_set(input, 'filterOpen')){  // Need to render with filtering
+                _render(input);
+            }
+            else{   // show straightway
+                methods.show.call(input, e);
+            }
 
-        // if(!input.val()){    // Empty
-        //     _getWrappedListElements().each(function () {
-        //         $(this).show();
-        //     });
-        // }
-
-        // _filterValue(input);
-
-        // Check if has not selected, selected the first as default
-        var wrapped_elements = _getWrappedListElements();
-        if ( _isWrappedListVisible() && wrapped_list.find('.selected:visible').length == 0 &&  wrapped_elements.length){
-            wrapped_list.find('.selected').removeClass('selected');
-            wrapped_list.find('.inputpicker-wrapped-element:visible').first().addClass('selected');
+            var wrapped_elements = _getWrappedListElements();
+            if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
+                wrapped_list.first().addClass('selected');
+            }
         }
-        // dd([
-        //     '.selected:visible: ' +  wrapped_list.find('.selected:visible').length + ', ' + wrapped_elements.length,
-        //     wrapped_elements.first().length,
-        //     wrapped_elements.find(':visible').first().html()
-        // ]);
     }
 
     function _isDefined(v) {
@@ -1114,15 +1205,28 @@
          */
         filterField: '',
 
+        /**
+         * Limit number
+         */
         limit: 0,
 
+        // --- URL settings --------------------------------------------
+        url: '',    // set url
+
+        /**
+         * Set url params for the remote data
+         */
+        urlParam: {},
+
+        /**
+         * If search interval is too short, will execute
+         */
+        urlDelay: 0,
 
         listBackgroundColor: '',
         listBorderColor: '',
         rowSelectedBackgroundColor: '',
         rowSelectedFontColor : '',
-
-
 
         // Un-necessary - Use Pagination
         // pagination: false,
@@ -1131,5 +1235,5 @@
 
     };
 
-    $.fn.inputpicker.wrapped_list = null;
+    // $.fn.inputpicker.wrapped_list = null;
 });
