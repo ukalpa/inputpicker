@@ -70,7 +70,7 @@
 
                 // Merge settings by orders: 1.options > 2 attr > 3.defaults
                 // If option is array, set it as data
-                var settings = $.extend({}, $.fn.inputpicker.defaults, _options,  Array.isArray(options) ? {data:options} : options);
+                var settings = $.extend({ cache: {} }, $.fn.inputpicker.defaults, _options,  Array.isArray(options) ? {data:options} : options);
 
                 // Set default value for fieldText
                 if(!settings['fieldText'])  settings['fieldText'] = settings['fieldValue'];
@@ -114,20 +114,26 @@
         },
 
         /**
-         * Load data again when having changed url or params
+         * Load data manually when having changed url or params
+         * It may trigger change if the value was changed
          * @param func - callback
          */
         loadData: function (data, func) {
             return this.each(function () {
                 var input = _i($(this));
-                _loadData(input, data, function (input) {
-                    _setValue(input, _o(input).val());
+                _loadData.call(input,
+                    input, data, function (input, data) {
+                        if ( _setValue(input, _o(input).val()) ){
+                            _o(input).trigger('change');
+                        }
+                        else{
+                            // No change
+                        }
 
-
-                    if(typeof func == 'function'){
-                        func(input);
-                    }
-                });
+                        if(typeof func == 'function'){
+                            func.call(input, input, data);
+                        }
+                    });
 
             });
         },
@@ -336,20 +342,51 @@
     function _execJSON(input, param, func) {
         var url = _set(input, 'url');
 
-        if (typeof func == 'undefined'){
+        if(typeof param == 'undefined' && typeof func == 'undefined'){
+            _alert('The param is incorrect. input[name=' + _name(input) + ']');
+            return;
+        }
+        if (typeof func == 'undefined' && typeof param == 'function'){
             func = param;
             param = {};
         }
+        if (typeof func != 'function'){
+            _alert('The callback function is incorrect. input[name=' + _name(input) + ']');
+            return;
+        }
 
-        $.get(url, $.extend({
+        param = $.extend({
             q: input.val(),
             limit : _set(input, 'limit'),
             fieldValue: _set(input, 'fieldValue'),
             fieldText: _set(input, 'fieldText'),
             value: _o(input).val()
-        }, _set(input, 'urlParam'), param), func, "json");
-    }
+        }, _set(input, 'urlParam'), param);
 
+        var param_serialised = 'urlParams|' + $.param(param);
+
+
+        var cacheData = _cache(input, param_serialised);
+        if(_set(input, 'urlCache') ){
+            if( typeof cacheData == 'undefined' ){
+                dd('Set cache:' + _name(input));
+                $.get(url, param, function (ret) {
+                    _cache(input, param_serialised, ret);
+                    func(ret);
+                }, "json");
+            }
+            else{
+                func(cacheData);
+                dd('Use cache');
+            }
+        }
+        else{
+            dd('Not use cache');
+            $.get(url, param, func, "json");
+        }
+
+    }
+    
     /**
      * Get wrapped list
      * If div wrapped list doest not exist, initiate it
@@ -489,6 +526,27 @@
     function _uuid(o, uuid) {
         return typeof uuid == 'undefined' ? o.data('inputpicker-uuid') : o.data('inputpicker-uuid', uuid);
 
+    }
+
+    function _cache(input, name, value) {
+        var settings = input.data('inputpicker-settings') ;
+        if (typeof value == 'undefined'){
+            if (typeof name == 'undefined'){    // get all settings
+                return settings['cache'];
+            }
+            else if( typeof name == 'object'){  // set all settings
+                settings['cache'] = name;
+                input.data('inputpicker-settings', settings);
+            }
+            else{
+                return settings['cache'][name];  // get setting
+            }
+        }
+        else{
+            settings['cache'][name] = value;
+            input.data('inputpicker-settings', settings);
+            return input;
+        }
     }
 
     /**
@@ -804,7 +862,8 @@
                 if(_isMSIE())   input.removeClass('loading-msie-patch');
 
                 if(typeof func == 'function'){
-                    func(input);
+                    // func(input);
+                    func.call(this, input, data);
                 }
             });
         }
@@ -818,7 +877,8 @@
             }
 
             if(typeof func == 'function'){
-                func(input);
+                // func(input);
+                func.call(this, input, data);
             }
 
             input.removeClass('loading').prop('disabled', false);
@@ -831,13 +891,11 @@
 
     /**
      * Set value
-     *
-     * true - value changed
-     * false - not changed
-     *
+     *     *
      * @param input
      * @param value
      * @private
+     * @return true - value changed, false - not changed
      */
     function _setValue(input, value) {
         var original = _o(input);
@@ -856,10 +914,12 @@
 
         if ( index_i == -1){    // Did not find, set the first data as default value
             index_i = 0;
+            value = data[index_i][ fieldValue ];
         }
 
         input.val( data[index_i][ fieldText ]);
         original.val( data[index_i][ fieldValue ]);
+
         return old_original_value != value; // If changed
     }
 
@@ -984,7 +1044,7 @@
         //     e.preventDefault();
         //     return;
         // }
-        dd( _name(input) + '._eventKeyDown:' + e.keyCode);
+        dd( _name(input) + '._eventKeyDown:' + e.keyCode + '; charCode:' + e.charCode);
 
 
         switch(e.keyCode){
@@ -1049,7 +1109,7 @@
         // }
         dd( _name(input) + '._eventKeyUp:' + e.keyCode);
 
-        if ($.inArray( e.keyCode, [37, 38, 39, 40, 27, 9, 13]) != -1 ){
+        if ($.inArray( e.keyCode, [37, 38, 39, 40, 27, 9, 13, 16]) != -1 ){
             return ;
         }
 
@@ -1212,6 +1272,8 @@
 
         // --- URL settings --------------------------------------------
         url: '',    // set url
+
+        urlCache: false,
 
         /**
          * Set url params for the remote data
