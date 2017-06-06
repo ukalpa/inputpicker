@@ -481,8 +481,7 @@
         var inputpicker_div = _getInputpickerDiv(input);
         if (!inputpicker_div.find('.inputpicker-multiple').length){
             var inputpicker_multiple_div = $("<div class=\"inputpicker-multiple\" style=\"\"><ul class=\"\">" +
-                "<li class=\"inputpicker-element\">Text 1 <a href=\"#\">x</a></li>" +
-                "<li class=\"inputpicker-element\">Text 2 <a href=\"#\">x</a></li>" +
+                // "<li class=\"inputpicker-element\">Text 1 <a href=\"#\">x</a></li>" +
                 "</ul></div>").prependTo(inputpicker_div);
 
             inputpicker_div
@@ -1459,7 +1458,7 @@
 
         for(var i = 0; i < new_data.length; i++){
             var d = new_data[i];
-            $("<li class=\"inputpicker-element\" data-value=\"" + d[fieldValue] + "\"><span>" + d[fieldText] + "</span> <a href=\"javascript:void(0);\" onclick=\"$(this).closest('.inputpicker-div').find('input').inputpicker('removeValue', $(this).parent().data('value') );event.stopPropagation();\" onmouseover=\"$(this).prev().addClass();\">x</a></li>").insertBefore(li_input);
+            $("<li class=\"inputpicker-element\" data-value=\"" + d[fieldValue] + "\"><span>" + d[fieldText] + "</span> <a href=\"javascript:void(0);\" onclick=\"$(this).closest('.inputpicker-div').find('input').inputpicker('removeValue', $(this).parent().data('value') );event.stopPropagation();\" onmouseover=\"$(this).prev().addClass();\" tabindex='-1'>x</a></li>").insertBefore(li_input);
         }
 
         // input.remove();
