@@ -12,6 +12,8 @@
                             <li><a href="#basic-filter-input">Filter input</a></li>
                         </ul>
                     </li>
+                    <li><a href="#multiple-values">Multiple Values</a>
+                    </li>
                     <li><a href="#remote">Remote data</a>
                         <ul class="nav">
                             <li class="active"><a href="#remote-json">JSON</a></li>
@@ -92,6 +94,7 @@ $('#test').inputpicker({
         {name:'text',text:'Title'},
         {name:'description',text:'Description'}
     ],
+    autoOpen: true,
     headShow: true,
     fieldText : 'text',
     fieldValue: 'value'
@@ -112,6 +115,7 @@ $('#test').inputpicker({
                                     {name:'text',text:'Title'},
                                     {name:'description',text:'Description'}
                                 ],
+                                autoOpen: true,
                                 headShow: true,
                                 fieldText : 'text',
                                 fieldValue: 'value'
@@ -149,7 +153,8 @@ $('#test').inputpicker({
     fields:['value','text','description'],
     fieldText : 'text',
     headShow: true,
-    filterOpen: true
+    filterOpen: true,
+    autoOpen: true
 });
 </script>");
 								?></code></pre>
@@ -165,13 +170,68 @@ $('#test').inputpicker({
                                 fields:['value','text','description'],
                                 fieldText : 'text',
                                 headShow: true,
-                                filterOpen: true
+                                filterOpen: true,
+                                autoOpen: true
                             });
                         });
                     </script>
 
                 </section>
                 <!-- End Section -->
+                <a name="multiple-values"></a>
+                <h2>Multiple Values</h2>
+
+                <!-- Begin multiple values -->
+	            <?php $test_index++; ?>
+                <section class="row">
+                    <div class="col-sm-12">
+                        <a name="basic-filter-input"></a>
+                        <p>
+                            Set "mutiple" as true/false to filter/un-filter the result from the list, set "filterType" to choose the filter type and "filterField" to choose which fields would be searched
+
+                        </p>
+                        <h4>Example</h4>
+                        <div class=" ">
+                            <input class="form-control" id="test<?php echo $test_index ?>" value="2,1" />
+                        </div>
+                        <h4>Source code</h4>
+                        <pre><code class="html"><?php echo ip_html("<input class=\"form-control\" id=\"test\" value=\"1,2\" />
+<script>
+$('#test').inputpicker({
+    data:[
+        {value:\"1\",text:\"Text 1\", description: \"This is the description of the text 1.\"},
+        {value:\"2\",text:\"Text 2\", description: \"This is the description of the text 2.\"},
+        {value:\"3\",text:\"Text 3\", description: \"This is the description of the text 3.\"}
+    ],
+    fields:['value','text','description'],
+    fieldText : 'text',
+    multiple: true,
+    headShow: true,
+    filterOpen: true,
+    autoOpen: true
+});
+</script>");
+					            ?></code></pre>
+                    </div>
+                    <script>
+                        $(function () {
+                            $('#test<?php echo $test_index ?>').inputpicker({
+                                data:[
+                                    {value:"1",text:"Text 1", description: "This is the description of the text 1."},
+                                    {value:"2",text:"Text 2", description: "This is the description of the text 2."},
+                                    {value:"3",text:"Text 3", description: "This is the description of the text 3."}
+                                ],
+                                fields:['value','text','description'],
+                                fieldText : 'text',
+                                multiple: true,
+                                headShow: true,
+                                filterOpen: true,
+                                autoOpen: true
+                            });
+                        });
+                    </script>
+                </section>
+                <!-- End multiple values -->
 
                 <a name="remote"></a>
                 <h2>Remote data</h2>

@@ -17,5 +17,12 @@
 
 
 </script>
+
+<?php
+if(file_exists('./analyticstracking.php')){
+	include_once("./analyticstracking.php");
+}
+
+?>
 </body>
 </html>

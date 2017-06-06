@@ -30,6 +30,8 @@
                                     <a href="#options-basic">Basic</a>
                                     <a href="#options-data">Data</a>
                                     <a href="#options-url">Remote Url</a>
+                                    <a href="#options-filter">Filter</a>
+                                    <a href="#options-multiple-values">Multiple Values</a>
                                 </li>
                             </ul>
 						</li>
@@ -220,6 +222,7 @@
                             </table>
 
 
+                            <a name="options-filter"></a>
                             <h3>Filter</h3>
 							<table class="table table-bordered">
 								<thead>
@@ -267,6 +270,45 @@
 								</tr>
 								</tbody>
 							</table>
+
+
+
+                            <a name="options-multiple-values"></a>
+                            <h3>Multiple Values</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Format</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>multiple</td>
+                                    <td>Bool</td>
+                                    <td>Set whether supporting multiple values</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>true - support multiple values. </li>
+                                            <li>false - do not support. </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>delimiter</td>
+                                    <td>String</td>
+                                    <td>Set the delimiter when "multiple" is true </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>the default value is comma ","</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
 						</div>
 					</section>
 					<!-- End Section -->
