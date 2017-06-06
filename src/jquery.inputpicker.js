@@ -29,6 +29,7 @@
                 else{
                     var uuid = _generateUid();
                     original.data('inputpicker-uuid', uuid);
+                    var ow = original.outerWidth();
 
                     // Clone input
                     var input = original.clone();
@@ -37,7 +38,7 @@
                     input.val('').data('inputpicker-uuid', uuid).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
 
                     // Inputpicker div ( wrap fake input and arrow )
-                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>").append(input);
+                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"width:"+ ow + "px\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>").append(input);
                     original.after(inputpicker_div);
 
                     // Add Classes to the original element
@@ -386,7 +387,35 @@
         }
 
     }
-    
+
+    function _getInputDiv(input) {
+        return _i(input).parent();
+    }
+
+    function _getInputMultipleList(input) {
+        var input_div = _getInputDiv(input);
+        if (!input_div.find('.inputpicker-multiple-list').length){
+            input_div.prepend("<div class=\"inputpicker-multiple-list\" style='position: absolute;left:0;top:0;'>" +
+                "<ul class=\"\">" +
+                    // <li class="inputpicker-multiple-element"></li>
+                "<li class=\"inputpicker-multiple-element\">Text 1</li>" +
+                "<li class=\"inputpicker-multiple-element\">Text 2</li>" +
+                "</ul></div>");
+        }
+    }
+
+    /**
+     *
+     * @param input
+     * @param isSelected - true: selected false: unselected, undefined: all
+     * @returns {*}
+     * @private
+     */
+    function _getInputMultipleElements(input) {
+        var p = '.inputpicker-multiple-element';
+        return _getInputDiv(input).find(p);
+    }
+
     /**
      * Get wrapped list
      * If div wrapped list doest not exist, initiate it
@@ -660,7 +689,7 @@
         var value = _o(input).val();
         var left = input.offset().left , //+ input.outerWidth()
             top = input.offset().top + input.outerHeight();
-        var html_table = "";
+        var output = "";
         var tmp, tmp1, tmp2;
 
         var width, height;
@@ -683,7 +712,7 @@
         }).data('inputpicker-uuid', uuid).html('');
 
         // Load CSS
-        html_table += "<style>";
+        output += "<style>";
         if ( tmp = _set(input, 'listBackgroundColor') ){
             wrapped_list.css('backgroundColor', tmp);
         }
@@ -694,19 +723,19 @@
         tmp1 = _set(input, 'rowSelectedBackgroundColor');
         tmp2 = _set(input, 'rowSelectedFontColor')
         if ( tmp1 || tmp2 ){
-            html_table += ".inputpicker-wrapped-list .table .selected{ ";
-            if(tmp1)    html_table += "background-color: " + tmp1 + "; ";
-            if(tmp2)    html_table += "color: " + tmp2 + "; ";
-            html_table += "}";
+            output += ".inputpicker-wrapped-list .table .selected{ ";
+            if(tmp1)    output += "background-color: " + tmp1 + "; ";
+            if(tmp2)    output += "color: " + tmp2 + "; ";
+            output += "}";
         }
-        html_table += "</style>";
+        output += "</style>";
 
         // Draw table
-        html_table += "<table class=\"table small\">" ;
+        output += "<table class=\"table small\">" ;
 
         // Show head
         if(_set(input, 'headShow')){
-            html_table += '<thead><tr>';
+            output += '<thead><tr>';
             for(var i = 0; i < fields.length; i++){
                 var text = '';
                 if (typeof fields[i] == 'object'){
@@ -715,18 +744,18 @@
                 else{
                     text = fields[i];
                 }
-                html_table += '<th>' + text + '</th>';
+                output += '<th>' + text + '</th>';
             }
-            html_table += '</thead>';
+            output += '</thead>';
         }
 
         // Show data
         if(data.length){
-            html_table += "<tbody>";
+            output += "<tbody>";
             var isSelected = false;
             for(var i = 0; i < data.length; i++) {
                 isSelected = value == data[i][ fieldValue ] ? true : false;
-                html_table += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
+                output += '<tr class="inputpicker-wrapped-element inputpicker-wrapped-element-' + i + ' ' + (isSelected ? 'selected' : '') + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
                 for (var j = 0; j < fields.length; j++) {
 
                     var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
@@ -737,7 +766,7 @@
                         text = '&nbsp;';
                     }
 
-                    html_table += '<td';
+                    output += '<td';
                     var html_style = "";
                     if(_isObject(fields[j])){
                         if(fields[j]['width']){
@@ -746,22 +775,22 @@
 
                         // ...
                     }
-                    html_table += ' style="' + html_style + '" ';
+                    output += ' style="' + html_style + '" ';
 
-                    html_table += '>' + text + '</>';
+                    output += '>' + text + '</>';
                 }
-                html_table += '</tr>';
+                output += '</tr>';
             }
 
-            html_table += "</tbody>";
+            output += "</tbody>";
         }
         else{
-            html_table += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
+            output += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
         }
 
-        html_table += "</table>";
+        output += "</table>";
 
-        wrapped_list.append($(html_table));
+        wrapped_list.append($(output));
 
         // Set events
         wrapped_list.find('tbody').find('tr').each(function () {
@@ -920,7 +949,23 @@
         input.val( data[index_i][ fieldText ]);
         original.val( data[index_i][ fieldValue ]);
 
+        if (old_original_value != value ){
+            _afterChangeValue(input);
+        }
+
         return old_original_value != value; // If changed
+    }
+
+    function _afterChangeValue(input) {
+
+        // Draw multiple
+        if ( _set(input, 'multiple')){
+            // var input_div = _getInputDiv(input);
+            // if ()
+            var multiple_list = _getInputMultipleList(input);
+
+            // redraw value
+        }
     }
 
     /**
@@ -1217,6 +1262,16 @@
          */
         headShow : false,   // true : show head, false: hide
 
+
+        /**
+         * Support multiple values
+         */
+        multiple : false,
+
+        /**
+         * Delimite for multiple values
+         */
+        multipleSplit: ',',
 
         /**
          * Data
