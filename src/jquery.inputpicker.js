@@ -21,14 +21,27 @@
     methods = {
         init: function (options) {
             return this.each(function () {
+                var uuid = _generateUid();
                 var original = $(this);
                 var input;   // Shadow input
                 // Check if has been initiated
-                if (original.hasClass('inputpicker-original')) {
-                    input = _i(original);
+                // if (original.hasClass('inputpicker-original')) {
+                //     input = _i(original);
+                // }
+                // else
+                if (original.hasClass('inputpicker-original') && _getInputpickerDiv(_i(original))) {
+                    var orginial_css = original.data('inputpicker-original-css');
+                    //inputpicker-overflow-hidden
+                      _getInputpickerDiv(_i(original)).closest('.inputpicker-overflow-hidden').remove();
+                    original.removeClass(function (index, className) {
+                        return (className.match (/\binputpicker-\S+/g) || []).join(' ');
+                    });
+                    original.css({
+                        top:orginial_css['top'],
+                        position: orginial_css['position']
+                    });
                 }
-                else {
-                    var uuid = _generateUid();
+                {
                     original.data('inputpicker-uuid', uuid);
                     var ow = original.outerWidth();
 
@@ -42,6 +55,7 @@
                     var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"width:" + ow + "px;position:relative;overflow:auto;height:100%;\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>")
                         .append(input)
                         .on('click', function (e) {
+
                             $(this).find('input').focus();
 
                             // input.is(":focus")
@@ -61,7 +75,7 @@
 
 
 
-                    var div_overflow_hidden = $("<div class=\"\" style='overflow: hidden;'></div>");
+                    var div_overflow_hidden = $("<div class=\"inputpicker-overflow-hidden\" style='overflow: hidden;'></div>");
                     original.after(div_overflow_hidden.append(inputpicker_div));
 
                     // Add Classes to the original element
@@ -71,6 +85,7 @@
                         .attr('tabindex', -1)
                         .data('inputpicker-input', input)
                         .data('inputpicker-original-css', {
+                            'top': original.css('top'),
                             'position': original.css('position')
                         })
                         .css({
@@ -471,8 +486,11 @@
     function _init(input) {
 
         // Set
-        if (_set(input, "multiple")) {
+        if ( _typeIsMultiple(input)) {
             _initMultiple(input);
+        }
+        else if( _typeIsTag(input)) {
+            _initTag(input);
         }
 
     }
@@ -483,6 +501,38 @@
             var inputpicker_multiple_div = $("<div class=\"inputpicker-multiple\" style=\"\"><ul class=\"\">" +
                 // "<li class=\"inputpicker-element\">Text 1 <a href=\"#\">x</a></li>" +
                 "</ul></div>").prependTo(inputpicker_div);
+
+            inputpicker_div
+                .attr('class', inputpicker_div.attr('class') + ' ' + input.attr('class'))
+                .css('border', input.css('border'))
+                .addClass('inputpicker-multiple')
+                .css('left', '0px')
+                // To measure the length of input
+                .append("<span class=\"input-span\" style=\"display: none;\" ></span>")
+            ;
+
+
+            input.removeClass().width(1)
+                .on('keyup.inputpicker.multiple', function (e) {
+                    var input = $(this);
+                    var inputpicker_div = _getInputpickerDiv(input);
+                    var span = inputpicker_div.find('.input-span');
+
+                    span.text(input.val());
+                    input.width(span.width() + 15);
+                    _setWrappedListPosition(input);
+                });
+
+            input.detach().appendTo($("<li class=\"inputpicker-multiple-input\"></li>").appendTo(inputpicker_multiple_div.find('ul')));
+
+        }
+
+    }
+
+    function _initTag(input) {
+        var inputpicker_div = _getInputpickerDiv(input);
+        if (!inputpicker_div.find('.inputpicker-multiple').length){
+            var inputpicker_multiple_div = $("<div class=\"inputpicker-multiple\" style=\"\"><ul class=\"\"></ul></div>").prependTo(inputpicker_div);
 
             inputpicker_div
                 .attr('class', inputpicker_div.attr('class') + ' ' + input.attr('class'))
@@ -744,11 +794,18 @@
         if (_set(input, 'multiple')){
             t = 'multiple';
         }
+        else if (_set(input, 'tag')){
+            t = 'tag';
+        }
         return t;
     }
 
     function _typeIsMultiple(input) {
         return 'multiple' === _type(input);
+    }
+
+    function _typeIsTag(input) {
+        return 'tag' === _type(input);
     }
 
     /**
@@ -862,6 +919,9 @@
         if (_typeIsMultiple(input)){
             _dataRenderMultiple(input);
         }
+        else if (_typeIsTag(input)){
+            _dataRenderTag(input);
+        }
         else{
             _dataRenderDefault(input);
         }
@@ -915,6 +975,24 @@
         return output;
     }
 
+    /**
+     * Draw multiple values
+     */
+    function _dataRenderTag(input) {
+        var wrapped_list = _getWrappedList(input);
+
+        _set(input, 'headShow', false);
+
+        _dataRenderMultiple(input);
+
+        // Add "Tag"
+        //inputpicker-no-result
+        // var tr_no_result =
+        // if ( )
+        dd('inputpicker-no-result', wrapped_list.find('.inputpicker-no-result').length);
+
+
+    }
 
     /**
      * Draw multiple values
@@ -983,7 +1061,7 @@
             output += "</tbody>";
         }
         else{
-            output += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
+            output += "<thead><tr><td colspan='" + fields.length + "' align='center' class=\"inputpicker-no-result\">No results.</td></thead></tr>";
         }
 
         output += "</table>";
@@ -1079,7 +1157,7 @@
         //     display: '',
         // })
         wrapped_list.show()
-            .data('inputpicker-uuid', uuid).html('');
+        .data('inputpicker-uuid', uuid).html('');
 
         _setWrappedListWidthAndHeight(input);
         _setWrappedListPosition(input);
@@ -1162,12 +1240,11 @@
                 });
                 that.addClass('inputpicker-active');
             }).on('click', function (e) {
-                var i = $(this).data('i');
                 var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
                 var input = $('#inputpicker-' + uuid);
                 var data = _set(input, 'data');
 
-                _setValue(input, data[i][ _set(input, 'fieldValue') ]);
+                _setValue(input, $(this).data('value'));
                 _o(input).trigger('change');
 
                 // To fix the bug of unable to close automatically in IE.
@@ -1384,6 +1461,9 @@
         if( _typeIsMultiple(input)){
             return _setValueForMultiple(input, value);
         }
+        else if( _typeIsTag(input)){
+            return _setValueForTag(input, value);
+        }
         else{
             var original = _o(input);
             var old_original_value = original.val();
@@ -1421,6 +1501,10 @@
 
     }
 
+    function _setValueForTag(input, value) {
+        return _setValueForMultiple(input, value);
+    }
+
     function _setValueForMultiple(input, value) {
         var original = _o(input);
         var old_original_value = original.val();
@@ -1432,7 +1516,7 @@
 
         var arr_values = value ? value.toString().split(delimiter) : [];
         var new_values = [];
-        // dd('old_original_value: ' + old_original_value + ' ; _setValueForMultiple: ' + value + ' ; arr= ', arr);
+            // dd('old_original_value: ' + old_original_value + ' ; _setValueForMultiple: ' + value + ' ; arr= ', arr);
         var new_data = [];
 
 
@@ -1476,6 +1560,9 @@
         if (_typeIsMultiple(input)){
             return _setValueByActiveForMultiple(input);
         }
+        else if (_typeIsTag(input)){
+            return _setValueByActiveForMultiple(input);
+        }
         else{
 
             var wrapped_list = _getWrappedList();
@@ -1499,7 +1586,7 @@
 
 
     }
-
+    
     function _setValueByActiveForMultiple(input) {
 
 
@@ -1540,13 +1627,13 @@
         else{   // Not selected, No any change
             return false;
         }
-
+        
     }
-
-
-
-
-
+    
+    
+    
+    
+    
 
     function _isWrappedListVisible(input) {
         var wrapped_list = _getWrappedList();
@@ -1688,7 +1775,7 @@
                     }
                 }
                 else{   // restore
-                    if( _o(input).val()){
+                    if( _i(input).val()){   // If input is not ''
                         _setValue(input, _o(input).val());
                     }
                     else{
@@ -1707,7 +1794,8 @@
                 }
                 break;
             case 8:    // Backspace
-                if (input.val() == '' && _typeIsMultiple(input) && _getInputMultipleElements(input).length){
+
+                if (input.val() == '' && ( _typeIsMultiple(input) || _typeIsTag(input) ) && _getInputMultipleElements(input).length){
                     var original = _o(input);
                     var o_value = original.val().split(_set(input, 'delimiter'));
                     if(o_value.length){
@@ -1721,7 +1809,6 @@
                 //
                 break;
         }
-
     }
 
     function _eventKeyUp(e) {
@@ -1834,7 +1921,6 @@
         if(!this.length) return this;
         if(typeof method == 'object' || !method){
             return methods.init.apply(this, arguments);
-
         }
         else if(methods[method]){
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
@@ -1877,6 +1963,11 @@
          * Support multiple values
          */
         multiple : false,
+
+        /**
+         * Tag
+         */
+        tag : false,
 
         /**
          * Delimiter for multiple values
