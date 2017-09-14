@@ -169,6 +169,19 @@
                                         </ul>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>element</td>
+                                    <td>var</td>
+                                    <td>Get the element object
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>$('#test').inputpicker('element') or $('#test').inputpicker('element', 'AKL')</li>
+                                            <li>Return: <br > - Found: {"value":"AKL", "text":"Auckland", "country":"NZ"}<br />
+                                            - Not Found: null</li>
+                                        </ul>
+                                    </td>
+                                </tr>
                                 </tbody>
                             </table>
 

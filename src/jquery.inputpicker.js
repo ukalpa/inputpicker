@@ -234,6 +234,30 @@
             }
         },
 
+        element: function (value) {
+            return this.each(function () {
+                var original = _o($(this));
+                var input = _i(original);
+                var fieldValue = _set(input, 'fieldValue');
+                if (typeof(value == 'undefined')){
+                    value = original.val();
+                }
+                // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data));
+
+                var data = _set(input, 'data');
+                if ( !data.length)  return null;   // No data
+                var index_i = -1;
+                for(var i = 0; i < data.length; i++){
+                    if ( data[i][ fieldValue ] == value){
+                        dd(data[i]);
+                        return data[i];
+                    }
+                }
+                return null;
+
+            });
+        },
+
         /**
          * Show or hide the input
          */
