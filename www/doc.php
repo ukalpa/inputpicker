@@ -32,12 +32,16 @@
                                     <a href="#options-url">Remote Url</a>
                                     <a href="#options-filter">Filter</a>
                                     <a href="#options-multiple-values">Multiple Values</a>
+                                    <a href="#options-destroy">Destroy</a>
                                 </li>
                             </ul>
 						</li>
                         <li>
                             <a href="#events">Events</a>
                         </li>
+<!--                        <li>-->
+<!--                            <a href="#actions">Actions</a>-->
+<!--                        </li>-->
 						<li><a href="#html">HTML</a>
 						</li>
 						<li><a href="#css">CSS</a>
@@ -322,6 +326,34 @@
                                 </tbody>
                             </table>
 
+
+                            <a name="options-destroy"></a>
+                            <h3>Destroy</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Format</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>destroy</td>
+                                    <td>-</td>
+                                    <td>Restore the input to original if you do not want</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>$('#test').inputpicker('destroy'); </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+
+
 						</div>
 					</section>
 					<!-- End Section -->
@@ -371,8 +403,50 @@
 
 
 
+<!--                    <a name="actions"></a>-->
+<!--                    <h2>Actions</h2>-->
+<!--                    <section class="row">-->
+<!--                        <div class="col-sm-12">-->
+<!--<!--                            <p>-->-->
+<!--<!--                                The list of Actions-->-->
+<!--<!--                            </p>-->-->
+<!--<!--                            <a name="options-basic"></a>-->-->
+<!--<!--                            <h3>Basic</h3>-->-->
+<!--                            <table class="table table-bordered">-->
+<!--                                <thead>-->
+<!--                                <tr class="active">-->
+<!--                                    <th>Name</th>-->
+<!--                                    <th>Description</th>-->
+<!--                                    <th style="width:50%;">Example</th>-->
+<!--                                </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody>-->
+<!--                                <tr>-->
+<!--                                    <td>focus(e)</td>-->
+<!--                                    <td>Focus on the input</td>-->
+<!--                                    <td>-->
+<!--                                        <ul class="list-unstyled">-->
+<!--                                            <li>$('#test').focus()</li>-->
+<!--                                        </ul>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>change(e)</td>-->
+<!--                                    <td>Activate after updating of the input</td>-->
+<!--                                    <td>-->
+<!--                                        <ul class="list-unstyled">-->
+<!--                                            <li>$('#test').change(function(input){ //... })</li>-->
+<!--                                        </ul>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </section>-->
 
-					<!-- Start examples-->
+
+
+                    <!-- Start examples-->
 					<a name="html"></a>
 					<h2>HTML</h2>
 					<!-- Begin section 1 -->

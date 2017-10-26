@@ -311,6 +311,7 @@ $('#test').inputpicker({
                         $(function () {
                             $('#test<?php echo $test_index ?>').inputpicker({
 
+                                width:'50%',
                                 url: './example-json.php',
                                 fields:['id','name','hasc'],
                                 fieldText:'name',
