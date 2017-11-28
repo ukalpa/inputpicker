@@ -111,7 +111,6 @@
                     }).on('change.inputpicker', function () {
                         var original = $(this);
                         var input = _i(original);
-                        // dd(['on Change original:' + original.val(), original] );
                         _setValue(input, original.val());
                     });
 
@@ -426,7 +425,25 @@
         //         var original = $(this);
         //         original.on('change', func);
         //     });
-        // }
+        // },
+
+        jumpToPage: function (page) {
+            //
+            return this.each(function () {
+                var original = _o($(this));
+                var input = _i(original);
+                var value = _o(input).val();
+
+                _set(input, 'pageCurrent', page ? parseInt(page) : 1);
+                _loadData.call(input,
+                    input, null, function (input, data) {
+                        _dataRender(input);
+                    });
+
+
+
+            });
+        },
 
         debug: true
     };
@@ -515,6 +532,24 @@
         if (typeof func != 'function'){
             _alert('The callback function is incorrect. input[name=' + _name(input) + ']');
             return;
+        }
+
+
+        // pagination: true,   // false: no
+        //     pageMode: '',  // '' or 'scroll'
+        //     pageField: 'p',
+        //     pageLimitField: 'per_page',
+        //     pageLimit: 10,
+        //     pageCurrent: 1,
+        if (_pagination(input)){
+            dd("param:" );
+            dd(param);
+            dd( "_set(input, 'pageField'):" + _set(input, 'pageField'));
+            dd( "_set(input, 'pageCurrent'):" + _set(input, 'pageCurrent'));
+            param[_set(input, 'pageField')]
+                = _set(input, 'pageCurrent');
+            param[_set(input, 'pageLimitField')]
+                = _set(input, 'limit') ? _set(input, 'limit') : 10;
         }
 
         param = $.extend({
@@ -749,7 +784,9 @@
 
         if ( setWidth.substr(-1) == '%'){
             var p = parseInt(setWidth.slice(0, -1));
-            width = parseInt(100 * inputpicker_div.outerWidth() / p);
+            width = parseInt(p * inputpicker_div.outerWidth() / 100);
+
+            dd("p:" + p + "; width:" + width);
         }
         else{
             width = setWidth ? setWidth : inputpicker_div.outerWidth();
@@ -759,7 +796,8 @@
         // Change the list position
         wrapped_list.css({
             width: width,
-            maxHeight: height
+            maxHeight: height,
+            overflowY:'auto'
         });
     }
 
@@ -880,6 +918,15 @@
 
     function _typeIsTag(input) {
         return 'tag' === _type(input);
+    }
+
+    function _pagination(input) {
+        var t = '';
+        if(_set(input, 'pagination')){
+            t = _set(input, 'pageMode');
+            if (t != 'scroll')  t = 'tradition';
+        }
+        return t;
     }
 
     /**
@@ -1049,6 +1096,42 @@
         return output;
     }
 
+    function _renderPaginationFooter(input){
+        var fields = _set(input, 'fields');
+        var output = "";
+        if( fields.length > 0 && _pagination(input)){
+            var fields = _set(input, 'fields');
+            output += '<tfoot class="inputpicker-pagination"><tr><td align="right" colspan="' + fields.length + '">';
+            output += "<div style=\"width:100%;\">";
+
+            var count = _set(input, 'pageCount') ? parseInt(_set(input, 'pageCount')) : 0;
+            var current_page = _set(input, 'pageCurrent') ? parseInt(_set(input, 'pageCurrent')) : 1;
+            var limit = _set(input, 'limit') ? parseInt(_set(input, 'limit')) : 10;
+            var last_page = Math.ceil( count / limit);
+            var prev_page = current_page > 1 ? (current_page - 1) : 1;
+            var next_page = current_page < last_page ? (current_page + 1) : last_page;
+
+            output += "<div style=\"float:left;padding-left:5px;\">There are " + count + " results.</div>";
+
+            output += "<div style=\"float:right;padding-right:5px;\">" +
+                "<a href=\"javascript:void(0);\" onclick=\"$('#inputpicker-" + _uuid(input) + "').inputpicker('jumpToPage', '1');\">First</a>" +
+                "<a href=\"javascript:void(0);\" onclick=\"$('#inputpicker-" + _uuid(input) + "').inputpicker('jumpToPage', '" + prev_page + "');\">Prev</a>" +
+                "<span class=\"current-page\">" + current_page + "</span>" +
+                "<a href=\"javascript:void(0);\" onclick=\"$('#inputpicker-" + _uuid(input) + "').inputpicker('jumpToPage', '" + next_page + "');\">Next</a>" +
+                "<a href=\"javascript:void(0);\" onclick=\"$('#inputpicker-" + _uuid(input) + "').inputpicker('jumpToPage', '" + last_page + "');\">Last</a>" +
+                "</div>";
+
+
+
+
+            output += "</div></div>";
+            output += '</td></tr></tfoot>';
+
+        }
+        return output;
+
+    }
+
     /**
      * Draw multiple values
      */
@@ -1137,6 +1220,7 @@
         else{
             output += "<thead><tr><td colspan='" + fields.length + "' align='center' class=\"inputpicker-no-result\">No results.</td></thead></tr>";
         }
+
 
         output += "</table>";
 
@@ -1300,6 +1384,8 @@
         else{
             output += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
         }
+
+        output += _renderPaginationFooter(input);
 
         output += "</table>";
 
@@ -1467,12 +1553,17 @@
         if (_set(input, 'url')){
             // input.prop('disabled', true);
             var param = {};
-            if (_isObject(data)){
+            if ( _isObject(data) && data){
                 param = data;
             }
 
             _execJSON(input, param, function (ret) {
                 var data;
+
+                if(_pagination(input)){
+                    _set(input, 'pageCount', ret[ _set(input, 'pageCountField')]);
+                }
+
                 if(_isArray(ret)){
                     data = ret;
                 }
@@ -2114,6 +2205,25 @@
          * If search interval is too short, will execute
          */
         urlDelay: 0,
+
+        /**
+         * pagination
+         */
+        pagination: false,   // false: no
+
+        pageMode: '',  // The Pagination mode: '' is the default style; 'scroll' is the scroll dragging style
+
+        pageField: 'p', // Page File Name for request
+
+        pageLimitField: 'limit', // Page Limit Field name for request
+
+        // pageLimit: 10,  // Page limit for request -- deprecated due to replication with the 'limit' field
+
+        pageCurrent: 1, // Current page
+
+        pageCountField: 'count',
+        pageCount:0,    // System uses
+
 
         listBackgroundColor: '',
         listBorderColor: '',
