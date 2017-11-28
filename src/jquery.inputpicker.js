@@ -262,28 +262,54 @@
             }
         },
 
-        element: function (value) {
+        /*
+        // Replace as new function to support selecting by specific field
+        element: function (value, field) {
             return this.each(function () {
                 var original = _o($(this));
                 var input = _i(original);
-                var fieldValue = _set(input, 'fieldValue');
-                if (typeof(value == 'undefined')){
+                if (typeof value == 'undefined'){
                     value = original.val();
                 }
+                var fieldValue = (typeof field === 'undefined') ? _set(input, 'fieldValue') : field;
+
                 // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data));
+                dd('fieldValue:' + fieldValue);
 
                 var data = _set(input, 'data');
                 if ( !data.length)  return null;   // No data
                 var index_i = -1;
                 for(var i = 0; i < data.length; i++){
                     if ( data[i][ fieldValue ] == value){
+                        dd(["what:", data[i][ fieldValue ], value]);
                         dd(data[i]);
                         return data[i];
                     }
                 }
+                dd("return null");
                 return null;
 
             });
+        },
+        */
+        element: function (value, field) {
+            var original = _o($(this));
+            var input = _i(original);
+            if (typeof value == 'undefined'){
+                value = original.val();
+            }
+            var fieldValue = (typeof field === 'undefined') ? _set(input, 'fieldValue') : field;
+
+            var data = _set(input, 'data');
+            if ( !data.length)  return null;   // No data
+            var index_i = -1;
+            for(var i = 0; i < data.length; i++){
+                if ( data[i][ fieldValue ] == value){
+                    return data[i];
+                }
+            }
+            return null;
+
         },
 
         /**

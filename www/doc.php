@@ -180,7 +180,12 @@
                                     </td>
                                     <td>
                                         <ul class="list-unstyled">
-                                            <li>$('#test').inputpicker('element') or $('#test').inputpicker('element', 'AKL')</li>
+                                            <li>
+                                                $('#test').inputpicker('element')
+                                                <br /> $('#test').inputpicker('element', 'AKL')
+                                                <br /> $('#test').inputpicker('element', 'AKL', 'text')
+                                                <br /><i><small>Select the element which the 'text' field is 'AKL'</small></i>
+                                            </li>
                                             <li>Return: <br > - Found: {"value":"AKL", "text":"Auckland", "country":"NZ"}<br />
                                             - Not Found: null</li>
                                         </ul>
