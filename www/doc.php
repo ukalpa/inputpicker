@@ -322,6 +322,13 @@
                                         </ul>
                                     </td>
                                 </tr>
+                                <tr><td colspan="4">Return JSON:
+
+                                        {"msg":"","count":75,"data":[{"id":2,"region_id":1,"name":"Auckland","hasc":"AL","region_name":"Auckland"},...]} <br />
+                                        msg: "" // Return error msg<br />
+                                        count: 75   // The total amount of items <br />
+                                        data:       // The items of current page
+                                    </td> </tr>
                                 </tbody>
                             </table>
 
