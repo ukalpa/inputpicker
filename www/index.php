@@ -17,6 +17,7 @@
                     <li><a href="#remote">Remote data</a>
                         <ul class="nav">
                             <li class="active"><a href="#remote-json">JSON</a></li>
+                            <li class="active"><a href="#remote-pagination">Pagination</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -323,6 +324,61 @@ $('#test').inputpicker({
                 </section>
                 <!-- End Section -->
 
+                <!-- Begin section 6 -->
+                <?php $test_index++; ?>
+                <section class="row">
+                    <div class="col-sm-12">
+                        <a name="remote-pagination"></a>
+                        <h3>JSON - Remote Search with Pagination</h3>
+                        <p>
+                            Send keyword to the remote source and parse it into the list
+                        </p>
+                        <h4>Example</h4>
+                        <div class=" ">
+                            <input class="form-control" id="test<?php echo $test_index ?>" value="" />
+                        </div>
+                        <h4>Source code</h4>
+                        <pre><code class="html"><?php echo ip_html("<input class=\"form-control\" id=\"test\" value=\"\" />
+<script>
+$('#test').inputpicker({
+    url: './example-json.php',
+    fields:['id','name','hasc'],
+    fieldText:'name',
+    fieldValue:'id',
+    pagination: true,
+    pageMode: '',
+    pageField: 'p',
+    pageLimitField: 'per_page',
+    limit: 5,
+    pageCurrent: 1,
+});
+</script>
+");
+                                ?></code></pre>
+                    </div>
+                    <script>
+                        $(function () {
+                            $('#test<?php echo $test_index ?>').inputpicker({
+
+                                width:'100%',
+                                url: './example-json.php',
+                                fields:['id','name','hasc'],
+                                fieldText:'name',
+                                fieldValue:'id',
+                                headShow: true,
+
+                                pagination: true,   // false: no
+                                pageMode: '',  // '' or 'scroll'
+                                pageField: 'p',
+                                pageLimitField: 'per_page',
+                                limit: 5,
+                                pageCurrent: 1,
+                            });
+                        });
+                    </script>
+
+                </section>
+                <!-- End Section -->
 
             </div>
 

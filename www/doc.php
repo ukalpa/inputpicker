@@ -29,7 +29,8 @@
                                 <li>
                                     <a href="#options-basic">Basic</a>
                                     <a href="#options-data">Data</a>
-                                    <a href="#options-url">Remote Url</a>
+                                    <a href="#options-remote-url">Remote Url</a>
+                                    <a href="#options-pagination">Pagination</a>
                                     <a href="#options-filter">Filter</a>
                                     <a href="#options-multiple-values">Multiple Values</a>
                                     <a href="#options-destroy">Destroy</a>
@@ -195,7 +196,7 @@
                             </table>
 
 
-                            <a name="options-data"></a>
+                            <a name="options-remote-url"></a>
                             <h3>Remote Url</h3>
                             <table class="table table-bordered">
                                 <thead>
@@ -243,6 +244,86 @@
                                 </tbody>
                             </table>
 
+
+
+                            <a name="options-pagination"></a>
+                            <h3 class="inline-block">Pagination</h3>
+                            <div class="inline-block alert alert-info small alert-message ml10" role="alert" >Only valid in the AJAX mode and getting data from the remote server.</div>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr class="active">
+                                    <th>Name</th>
+                                    <th>Format</th>
+                                    <th>Description</th>
+                                    <th style="width:50%;">Example</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>pagination</td>
+                                    <td>Bool</td>
+                                    <td>Set "true" to open the pagination feature
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>The default value is "false"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>pageMode</td>
+                                    <td>String</td>
+                                    <td>Unuse, will use it later
+                                    </td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>pageField</td>
+                                    <td>String</td>
+                                    <td>Set the field name posting the request url to the server
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>The default value is "p", Exp:"&p=1"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>pageCurrent</td>
+                                    <td>Int</td>
+                                    <td>Set the current page
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>The default value is "1", Exp:"&p=1"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>pageLimitField</td>
+                                    <td>String</td>
+                                    <td>Set the limit field name posting the request url to the server
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>The default value is "per_page", Exp:"&per_page=10"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>limit</td>
+                                    <td>Int</td>
+                                    <td>Set the default limit number per page getting from the server
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>The default value is "10"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
 
                             <a name="options-filter"></a>
                             <h3>Filter</h3>
