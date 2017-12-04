@@ -405,6 +405,8 @@
                 if (_setValue(input, value)) {
                     original.trigger('change');
                 }
+                else{
+                }
             });
         },
 
@@ -568,10 +570,10 @@
         //     pageLimit: 10,
         //     pageCurrent: 1,
         if (_pagination(input)){
-            dd("param:" );
-            dd(param);
-            dd( "_set(input, 'pageField'):" + _set(input, 'pageField'));
-            dd( "_set(input, 'pageCurrent'):" + _set(input, 'pageCurrent'));
+            // dd("param:" );
+            // dd(param);
+            // dd( "_set(input, 'pageField'):" + _set(input, 'pageField'));
+            // dd( "_set(input, 'pageCurrent'):" + _set(input, 'pageCurrent'));
             param[_set(input, 'pageField')]
                 = _set(input, 'pageCurrent');
             param[_set(input, 'pageLimitField')]
@@ -1970,7 +1972,12 @@
                         _setValue(input, _o(input).val());
                     }
                     else{
+                        // trigger change if activate
+                        var old_value = _o(input).val();
                         _setValue(input, '');
+                        if ( old_value != ''){
+                            _o(input).trigger('change');
+                        }
                     }
                 }
                 _hideWrappedList();
