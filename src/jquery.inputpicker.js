@@ -1321,7 +1321,9 @@
         var filterOpen = _set(input, 'filterOpen');
         var filterType = _set(input, 'filterType');
         var filterField = _set(input, 'filterField');
+        var highlightResult = _set(input, 'highlightResult');
         var value = _o(input).val();
+        var input_keyword_low = _i(input).val().toString().toLowerCase();
         var output = "";
         // var tmp, tmp1, tmp2;
         // var setWidth = _set(input, 'width');
@@ -1377,21 +1379,26 @@
         // Show data
         if(data.length){
             output += "<tbody>";
-            var isActive = false;
             for(var i = 0; i < data.length; i++) {
-                isActive = value == data[i][ fieldValue ] ? true : false;
-                output += '<tr class="inputpicker-element inputpicker-element-' + i + ' ' + (isActive ? 'inputpicker-active' : '') + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
+
+                var tr_highlight = false;
+
+                var output_tds = "";
                 for (var j = 0; j < fields.length; j++) {
 
                     var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
                     var text = typeof data[i][k] != 'undefined' ? data[i][k] : '';
+
+                    if ( value && text.toString().toLowerCase().indexOf(input_keyword_low) != -1){
+                        tr_highlight = true;
+                    }
 
                     // Check if value is empty and set it is shown value
                     if (!text){
                         text = '&nbsp;';
                     }
 
-                    output += '<td';
+                    output_tds += '<td';
                     var html_style = "";
                     if(_isObject(fields[j])){
                         if(fields[j]['width']){
@@ -1400,10 +1407,26 @@
 
                         // ...
                     }
-                    output += ' style="' + html_style + '" ';
+                    output_tds += ' style="' + html_style + '" ';
 
-                    output += '>' + text + '</>';
+                    output_tds += '>' + text + '</td>';
                 }
+
+
+                var tr_class = 'inputpicker-element inputpicker-element-' + i ;
+
+
+                if ( tr_highlight && highlightResult  ){
+                    tr_class += " inputpicker-highlight-active";
+                }
+
+                if( value == data[i][ fieldValue ]){
+                    tr_class += " inputpicker-active";
+                }
+
+
+                output += '<tr class=" ' + tr_class + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
+                output += output_tds;
                 output += '</tr>';
             }
 
@@ -1486,10 +1509,11 @@
             shouldBeActive = false;
 
             for (var j = 0; j < fields.length; j++) {
-                if (typeof data[i][fields[j]['name']] == 'undefined'){
+                var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
+                if (typeof data[i][field_name] == 'undefined'){
                     continue;
                 }
-                var fieldValue = data[i][fields[j]['name']].toString().toLowerCase();
+                var fieldValue = data[i][field_name].toString().toLowerCase();
                 if (fieldValue.substr(0, input_value_low.length) == input_value_low) {
                     shouldBeActive = true;
                     break;
@@ -1507,11 +1531,14 @@
         for(var x = 0; x < elements.length; x++){
             var i = $(elements[x]).data('i');
 
+
             for (var j = 0; j < fields.length; j++) {
-                if (typeof data[i][fields[j]['name']] == 'undefined'){
+
+                var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
+                if (typeof data[i][field_name] == 'undefined'){
                     continue;
                 }
-                var fieldValue = data[i][fields[j]['name']].toString().toLowerCase();
+                var fieldValue = data[i][field_name].toString().toLowerCase();
                 if (fieldValue.substr(0, input_value_low.length) == input_value_low) {
                     tr_new_active = elements[x];
                     break;
@@ -1534,14 +1561,56 @@
                     wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_active.data('i') * tr_active.outerHeight());
                 }
 
-
-
-
-
                 return ;
             }
         }
 
+    }
+
+
+    function _matchHighlightInRender(input) {
+
+
+        var highlightResult =  _set(input, 'highlightResult');
+        if(!highlightResult) return;
+
+        var wrapped_list = _getWrappedList(input);
+        var fields = _set(input, 'fields');
+        var fieldValue = _set(input, 'fieldValue');
+        var filterType =  _set(input, 'filterType');
+        var filterField =  _set(input, 'filterField');
+        var data = _formatData(fieldValue, methods.data.call(input));
+        var input_value = input.val();
+        var input_keyword_low = input_value.toString().toLowerCase();
+
+
+        var tr_active = _getWrappedListElements(true);
+
+        var elements = _getWrappedListElements();
+        elements.removeClass('inputpicker-highlight-active');
+        if ( !input_keyword_low) return;
+        for(var x = 0; x < elements.length; x++){
+            var i = $(elements[x]).data('i');
+
+
+            var inputpick_highlight_active = false;
+
+            for (var j = 0; j < fields.length; j++) {
+
+                var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
+                if (typeof data[i][field_name] == 'undefined'){
+                    continue;
+                }
+                var fieldValue = data[i][field_name].toString().toLowerCase();
+                if (fieldValue && fieldValue.indexOf(input_keyword_low) != -1){
+                    inputpick_highlight_active = true;
+                }
+            }
+
+            if (inputpick_highlight_active){    // Should set active
+                $(elements[x]).addClass('inputpicker-highlight-active');
+            }
+        }
     }
 
     // Check if the specific
@@ -2032,6 +2101,8 @@
             // If it is backspace, and data.length is not empty do not change
             var data = _set(input, 'data');
             if (e.keyCode == 8 && data.length ){
+
+                _matchHighlightInRender(input);
                 return ;
             }
 
@@ -2054,6 +2125,7 @@
                     wrapped_list.first().addClass('inputpicker-active');
                 }
                 _matchActiveInRender(input);
+                _matchHighlightInRender(input);
                 if(!input.is(":focus")) {
                     dd('focus', input)
                     input.focus();
@@ -2088,6 +2160,7 @@
                 wrapped_list.first().addClass('inputpicker-active');
             }
             _matchActiveInRender(input);
+            _matchHighlightInRender(input);
 
         }
     }
@@ -2265,6 +2338,13 @@
 
         // Un-necessary - Use Pagination
         // pagination: false,
+
+
+        // All the result match keywords will highlight, only
+        highlightResult : false,
+
+
+
 
         _bottom: ''
 

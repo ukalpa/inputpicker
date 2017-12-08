@@ -136,16 +136,27 @@
 										</ul>
 									</td>
 								</tr>
-								<tr>
-									<td>fieldText</td>
-									<td>String</td>
-									<td>Set the field which would be shown on the screen</td>
-									<td>
-										<ul class="list-unstyled">
-											<li>"text" - the attribute "text" will be shown on the screen. </li>
-										</ul>
-									</td>
-								</tr>
+                                <tr>
+                                    <td>fieldText</td>
+                                    <td>String</td>
+                                    <td>Set the field which would be shown on the screen</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>"text" - the attribute "text" will be shown on the screen. </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>highlightResult</td>
+                                    <td>Bool</td>
+                                    <td>Highlight for the options including the keyword</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>true - Open Highlight mode</li>
+                                            <li>false(default) - Close Highlight mode</li>
+                                        </ul>
+                                    </td>
+                                </tr>
 								</tbody>
 							</table>
 

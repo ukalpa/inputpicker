@@ -61,7 +61,11 @@
 }
 
 .inputpicker-wrapped-list .inputpicker-active{
-    background-color: #248cb5 ;
+    background-color: #248cb5 !important;
+}
+
+.inputpicker-wrapped-list .inputpicker-highlight-active{
+    background-color: #bddef9
 }
 
 /*.loading*/
