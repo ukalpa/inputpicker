@@ -157,6 +157,17 @@
                                         </ul>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>responsive</td>
+                                    <td>Bool</td>
+                                    <td>Responsive support</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>true(default) - If the "width" option is a percentage, the input width would be changed with resizing the window.</li>
+                                            <li>false - Not responsive</li>
+                                        </ul>
+                                    </td>
+                                </tr>
 								</tbody>
 							</table>
 
