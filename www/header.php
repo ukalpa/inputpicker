@@ -7,15 +7,14 @@ $ip_src = '../src/';
 $current_page = strtolower(basename($_SERVER['SCRIPT_FILENAME']));
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa</title>
 	<meta name="author" content="ukalpa@gmail.com">
 	<meta name="description" content="Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa">
-
-	<meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<script>
         function dd(d) {
             console.log(d);

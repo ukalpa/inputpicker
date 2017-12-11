@@ -20,10 +20,14 @@ $('#test').inputpicker({
 });
 &lt;/script&gt;</code></pre>
 
+## Demo and Document
+
+http://www.inputpicker.com
+
 
 ## License
 
-The plugin is licensed under the MIT licenses.  &copy; 2017 http://www.inputpicker.com 
+The plugin is licensed under the MIT licenses.  &copy; 2017 
  
  ## Author
  

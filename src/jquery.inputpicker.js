@@ -52,7 +52,7 @@
                     input.val('').data('inputpicker-uuid', uuid).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
 
                     // Inputpicker div ( wrap fake input and arrow )
-                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"width:" + ow + "px;position:relative;overflow:auto;height:100%;\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>")
+                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"position:relative;overflow:auto;height:100%;\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>")
                         .append(input)
                         .on('click', function (e) {
 
@@ -72,8 +72,8 @@
                         .on('selectstart', false);
                     ;
 
-
-
+                    // Set width, do not put into the top html in terms of using responsive later.
+                    inputpicker_div.css('width', ow + 'px');
 
                     var div_overflow_hidden = $("<div class=\"inputpicker-overflow-hidden\" style='overflow: hidden;'></div>");
                     original.after(div_overflow_hidden.append(inputpicker_div));
@@ -152,7 +152,10 @@
 
 
                 // -------- Load & Show ------------------------------------
+
                 _init(input);
+
+
 
 
                 // Load data and set value
@@ -188,6 +191,8 @@
 
             });
         },
+
+
 
         destroy: function (options) {
             return this.each(function () {
@@ -630,6 +635,19 @@
             _initTag(input);
         }
 
+        if (_set(input, 'responsive')){
+            var inputpicker_div = _getInputpickerDiv(input);
+            inputpicker_div.css('width', _set(input, 'width'));
+            $(window).bind('resize', function(){
+                _setWrappedListWidthAndHeight(input);
+                _setWrappedListPosition(input);
+
+            });
+        }
+
+
+
+
     }
 
     function _initMultiple(input) {
@@ -814,7 +832,7 @@
             var p = parseInt(setWidth.slice(0, -1));
             width = parseInt(p * inputpicker_div.outerWidth() / 100);
 
-            dd("p:" + p + "; width:" + width);
+            // dd("p:" + p + "; width:" + width);
         }
         else{
             width = setWidth ? setWidth : inputpicker_div.outerWidth();
@@ -2344,7 +2362,7 @@
         highlightResult : false,
 
 
-
+        responsive: true,
 
         _bottom: ''
 
