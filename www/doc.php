@@ -168,6 +168,17 @@
                                         </ul>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>creatable</td>
+                                    <td>Bool</td>
+                                    <td>Support inputing value manually</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>true - Press tab or enter or lose focus will use the current keyword as value.</li>
+                                            <li>false(default) - Press tab or enter or lose focus will use the old value</li>
+                                        </ul>
+                                    </td>
+                                </tr>
 								</tbody>
 							</table>
 

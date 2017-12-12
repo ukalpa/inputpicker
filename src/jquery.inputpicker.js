@@ -975,6 +975,15 @@
         return t;
     }
 
+    function _isCreatable(input) {
+        return _set(input, 'creatable');
+    }
+
+    function _inputValueEqualToOriginalValue(input) {
+        return _i(input).val() == _o(input).val();
+    }
+
+
     /**
      * Get / Set settings
      * Do not use it to set data, use _loadData
@@ -1737,6 +1746,7 @@
      * @return true - value changed, false - not changed
      */
     function _setValue(input, value) {
+
         // if ( typeof )
         if( _typeIsMultiple(input)){
             return _setValueForMultiple(input, value);
@@ -1761,13 +1771,19 @@
 
             if ( index_i == -1){    // Did not find, set the first data as default value
 
-                if ( value ){   // Has value, reset
-                    index_i = 0;
-                    value = data[index_i][ fieldValue ];
+                if(_isCreatable(input)){
+                    input.val(value);
+                    original.val( value);
                 }
-                else{   // Not value keep null
-                    input.val('');
-                    original.val('');
+                else{
+                    if ( value ){   // Has value, reset
+                        index_i = 0;
+                        value = data[index_i][ fieldValue ];
+                    }
+                    else{   // Not value keep null
+                        input.val('');
+                        original.val('');
+                    }
                 }
             }
 
@@ -2045,26 +2061,54 @@
                 _changeWrappedListSelected(input, 1);
                 break;
             case 27:    // Esc
-                _setValue(input, _o(input).val());
+                if( _isCreatable(input)) {
+                    if(!_inputValueEqualToOriginalValue(input)){
+                        _o(input).trigger('change');
+                    }
+                }
+                else{
+                    _setValue(input, _o(input).val());
+                }
                 _hideWrappedList();
                 break;
             case 9: // Tab
                 if ( _set(input, 'tabToSelect')){   // Change value by tab
-                    if ( _setValueByActive(input) ){  // Value changed
-                        _o(input).trigger('change');
+
+                    if( _isCreatable(input)){
+                        if(!_inputValueEqualToOriginalValue(input)){
+                            _o(input).trigger('change');
+                        }
+                    }
+                    else {
+                        if (_setValueByActive(input)) {  // Value changed
+                            _o(input).trigger('change');
+                        }
                     }
                 }
                 else{   // restore
-                    if( _i(input).val()){   // If input is not ''
-                        _setValue(input, _o(input).val());
+
+
+                    if( _isCreatable(input)){
+                        if(!_inputValueEqualToOriginalValue(input)){
+                            dd("is restore!=" + _i(input).val());
+
+                            _o(input).val(_i(input).val()).trigger('change');
+                        }
                     }
                     else{
-                        // trigger change if activate
-                        var old_value = _o(input).val();
-                        _setValue(input, '');
-                        if ( old_value != ''){
-                            _o(input).trigger('change');
+                        dd('restore not creatable');
+                        if( _i(input).val()){   // If input is not ''
+                            _setValue(input, _o(input).val());
                         }
+                        else{
+                            // trigger change if activate
+                            var old_value = _o(input).val();
+                            _setValue(input, '');
+                            if ( old_value != ''){
+                                _o(input).trigger('change');
+                            }
+                        }
+
                     }
                 }
                 _hideWrappedList();
@@ -2076,6 +2120,11 @@
                     _o(input).trigger('change');
                 }
                 else{
+                    if( _isCreatable(input)){
+                        if(!_inputValueEqualToOriginalValue(input)){
+                            _o(input).trigger('change');
+                        }
+                    }
                 }
                 break;
             case 8:    // Backspace
@@ -2363,6 +2412,7 @@
 
 
         responsive: true,
+        creatable : false,    // Allow user creates new value when true,
 
         _bottom: ''
 
