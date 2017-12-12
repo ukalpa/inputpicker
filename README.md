@@ -1,10 +1,18 @@
 # jQuery UI Inputpicker
 
-## Introduce
 This is a jQuery UI input picker plugin built to match with other official jQuery UI widgets. It would blend nicely multiple columns view with your form. The plugin is very easy to integrate in your form for your inputs.
 
 I built this plugin because I could not find a suitable plugin to support multiple columns in drop-down selection perfectly that what I needed for my projects.
 
+### Core Features
+* Easy to use
+* Multiple fields
+* Filter input
+* JSON Remote url with pagination
+* Responsive design
+* Creatable input
+* Multiple values like tags
+* And so on...
 
 ### How to use
 * Download `src/jquery.inputpicker.js` and `src/jquery.inputpicker.css`
