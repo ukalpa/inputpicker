@@ -979,6 +979,15 @@
         return _set(input, 'creatable');
     }
 
+    function _selectMode(input){
+        return _set(input, 'selectMode');
+    }
+
+    function _selectModeIsRestore(input) { return _set(input, 'selectMode') == 'restore'; }
+    function _selectModeIsActive(input) { return _set(input, 'selectMode') == 'active'; }
+    function _selectModeIsCreatable(input) { return _set(input, 'selectMode') == 'creatable'; }
+    function _selectModeIsEmpty(input) { return _set(input, 'selectMode') == 'empty'; }
+
     function _inputValueEqualToOriginalValue(input) {
         return _i(input).val() == _o(input).val();
     }
@@ -1769,13 +1778,18 @@
                 }
             }
 
-            if ( index_i == -1){    // Did not find, set the first data as default value
+            if ( index_i == -1){    // Did not find
 
-                if(_isCreatable(input)){
+                if(_selectModeIsCreatable(input)){
                     input.val(value);
                     original.val( value);
                 }
-                else{
+                else if (_selectModeIsEmpty(input)){
+                    input.val('');
+                    original.val('');
+                    value = '';
+                }
+                else{   // active and default
                     if ( value ){   // Has value, reset
                         index_i = 0;
                         value = data[index_i][ fieldValue ];
@@ -1994,6 +2008,39 @@
         return iev;
     }
 
+    function _setValueForInput(input) {
+
+        if ( _selectModeIsActive(input) ){   // Change value by tab
+            if (_setValueByActive(input)) {  // Value changed
+                _o(input).trigger('change');
+            }
+        }
+        else if (_selectModeIsCreatable(input)){      // Set the current keyword is new value
+            if(!_inputValueEqualToOriginalValue(input)){
+                _o(input).val(_i(input).val()).trigger('change');
+            }
+        }
+        else if (_selectModeIsEmpty(input)){ // Set the value is empty if does not find
+            if(!_inputValueEqualToOriginalValue(input)){
+                _i(input).val('');
+                _o(input).val('').trigger('change');
+            }
+        }
+        else{   // restore
+            if( _i(input).val()){   // If input is not ''
+                _setValue(input, _o(input).val());
+            }
+            else{
+                // trigger change if activate
+                var old_value = _o(input).val();
+                _setValue(input, '');
+                if ( old_value != ''){
+                    _o(input).trigger('change');
+                }
+            }
+        }
+    }
+
     /**
      * The input is focused
      * @param e
@@ -2011,6 +2058,7 @@
         var original = _o(input);
 
 
+        _setValueForInput(input);
         // _hideWrappedList();
 
 
@@ -2061,7 +2109,7 @@
                 _changeWrappedListSelected(input, 1);
                 break;
             case 27:    // Esc
-                if( _isCreatable(input)) {
+                if( _selectModeIsCreatable(input)) {
                     if(!_inputValueEqualToOriginalValue(input)){
                         _o(input).trigger('change');
                     }
@@ -2072,45 +2120,7 @@
                 _hideWrappedList();
                 break;
             case 9: // Tab
-                if ( _set(input, 'tabToSelect')){   // Change value by tab
-
-                    if( _isCreatable(input)){
-                        if(!_inputValueEqualToOriginalValue(input)){
-                            _o(input).trigger('change');
-                        }
-                    }
-                    else {
-                        if (_setValueByActive(input)) {  // Value changed
-                            _o(input).trigger('change');
-                        }
-                    }
-                }
-                else{   // restore
-
-
-                    if( _isCreatable(input)){
-                        if(!_inputValueEqualToOriginalValue(input)){
-                            dd("is restore!=" + _i(input).val());
-
-                            _o(input).val(_i(input).val()).trigger('change');
-                        }
-                    }
-                    else{
-                        dd('restore not creatable');
-                        if( _i(input).val()){   // If input is not ''
-                            _setValue(input, _o(input).val());
-                        }
-                        else{
-                            // trigger change if activate
-                            var old_value = _o(input).val();
-                            _setValue(input, '');
-                            if ( old_value != ''){
-                                _o(input).trigger('change');
-                            }
-                        }
-
-                    }
-                }
+                _setValueForInput(input);
                 _hideWrappedList();
                 break;
             case 13:    // Enter
@@ -2290,6 +2300,18 @@
         tabToSelect: false,
 
 
+        creatable : false,    // Allow user creates new value when true,
+
+        /**
+         * The action after pressing 'tab'
+         * restore: Use the previous value, the change event is not raised.
+         * active: Use the active option
+         * new: Use the current keyword,
+         * null : Set the word is null
+         */
+        selectMode : 'restore',
+
+
         /**
          * True - show head
          * False
@@ -2412,7 +2434,6 @@
 
 
         responsive: true,
-        creatable : false,    // Allow user creates new value when true,
 
         _bottom: ''
 

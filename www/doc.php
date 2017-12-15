@@ -168,8 +168,11 @@
                                         </ul>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>creatable</td>
+                                <tr style="color:#aaaaaa;">
+                                    <td>creatable(<b>deprecated</b>)
+                                        <br />
+                                        <i>Please use the following "selectMode:'creatable'" option to replace this option</i>
+                                    </td>
                                     <td>Bool</td>
                                     <td>Support inputing value manually</td>
                                     <td>
@@ -179,6 +182,20 @@
                                         </ul>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>selectMode</td>
+                                    <td>String</td>
+                                    <td>The input value depends on keyword and the selectMode</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>'restore'(default): Use the previous value, the change event is not raised</li>
+                                            <li>'active': Use the active row in the dropdown as the value</li>
+                                            <li>'creatable': Use the keyword as value</li>
+                                            <li>'empty': Use the empty value as value</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+
 								</tbody>
 							</table>
 
