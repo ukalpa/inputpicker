@@ -11,7 +11,7 @@ $current_page = strtolower(basename($_SERVER['SCRIPT_FILENAME']));
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa</title>
+	<title>Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa(ukalpa@gmail.com)</title>
 	<meta name="author" content="ukalpa@gmail.com">
 	<meta name="description" content="Inputpicker - A jQuery plugin of supporting multiple columns by Ukalpa">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
