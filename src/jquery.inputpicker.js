@@ -989,7 +989,8 @@
     function _selectModeIsEmpty(input) { return _set(input, 'selectMode') == 'empty'; }
 
     function _inputValueEqualToOriginalValue(input) {
-        return _i(input).val() == _o(input).val();
+        dd("_inputValueEqualToOriginalValue: _i(" + _i(input).val() + ") == _o(" + _o(input).val() + ")" );
+        return _i(input).data('value') == _o(input).val();
     }
 
 
@@ -1325,6 +1326,7 @@
                 self.removeClass('inputpicker-active');
 
                 input.val('');
+                input.data('value', '');
 
                 // _setValue(input, data[i][ _set(input, 'fieldValue') ]);
                 // _o(input).trigger('change');
@@ -1785,7 +1787,10 @@
                     original.val( value);
                 }
                 else if (_selectModeIsEmpty(input)){
+                    dd("res: index_i == -1 and empty, fieldValue:" + fieldValue + "; value: " + value);
+                    dd(data);
                     input.val('');
+                    input.data('value', '');
                     original.val('');
                     value = '';
                 }
@@ -1796,6 +1801,7 @@
                     }
                     else{   // Not value keep null
                         input.val('');
+                        input.data('value', '');
                         original.val('');
                     }
                 }
@@ -1803,6 +1809,7 @@
 
             if (index_i > -1){
                 input.val( data[index_i][ fieldText ]);
+                input.data('value', data[index_i][fieldValue]); // Check if it is equal the original when selectMode is empty
                 original.val( data[index_i][ fieldValue ]);
             }
 
@@ -2021,8 +2028,12 @@
             }
         }
         else if (_selectModeIsEmpty(input)){ // Set the value is empty if does not find
-            if(!_inputValueEqualToOriginalValue(input)){
+            if ( _i(input).val() != '' && (!_i(input).data('value')) && (!_o(input).val())){
                 _i(input).val('');
+            }
+            else if(!_inputValueEqualToOriginalValue(input)){
+                _i(input).val('');
+                _i(input).data('value', '');
                 _o(input).val('').trigger('change');
             }
         }
@@ -2058,7 +2069,14 @@
         var original = _o(input);
 
 
-        _setValueForInput(input);
+        if ( _selectModeIsEmpty(input)){
+            return;
+        }
+        //_setValueForInput(input); ???
+
+
+
+
         // _hideWrappedList();
 
 
@@ -2150,7 +2168,9 @@
                 }
                 break;
             default:
-                //
+                // Characters
+                input.data('value', '');
+
                 break;
         }
     }
