@@ -281,6 +281,17 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>urlHeaders</td>
+                                    <td>Object</td>
+                                    <td>Set specific headers for reading remote data
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>{"X-TOKEN":"This is a test token.", "X-User", "Admin"}</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>urlDelay</td>
                                     <td>Int</td>
                                     <td>Set seconds of delaying to read remote data

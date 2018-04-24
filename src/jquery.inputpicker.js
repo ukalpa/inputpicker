@@ -551,7 +551,7 @@
     }
 
     // Load remote json data
-    function _execJSON(input, param, func) {
+    function _execJSON(input, param, func, errorFunc) {
         var url = _set(input, 'url');
 
         if(typeof param == 'undefined' && typeof func == 'undefined'){
@@ -567,6 +567,11 @@
             return;
         }
 
+        if (typeof errorFunc != 'function'){
+            errorFunc = function(ret){
+                alert(ret);
+            }
+        }
 
         // pagination: true,   // false: no
         //     pageMode: '',  // '' or 'scroll'
@@ -600,10 +605,24 @@
         if(_set(input, 'urlCache') ){
             if( typeof cacheData == 'undefined' ){
                 dd('Set cache:' + _name(input));
-                $.get(url, param, function (ret) {
-                    _cache(input, param_serialised, ret);
-                    func(ret);
-                }, "json");
+                // $.get(url, param, function (ret) {
+                //     _cache(input, param_serialised, ret);
+                //     func(ret);
+                // }, "json");
+
+                $.ajax({
+                    url : url,
+                    data: param,
+                    type: "GET",
+                    dataType: 'json',
+                    headers: _set(input, 'urlHeaders'),
+                    success:function (ret) {
+                        _cache(input, param_serialised, ret);
+                        func(ret);
+                    },
+                    error: errorFunc
+                })
+
             }
             else{
                 func(cacheData);
@@ -612,7 +631,19 @@
         }
         else{
             dd('Not use cache');
-            $.get(url, param, func, "json");
+            // $.get(url, param, func, "json");
+            $.ajax({
+                url : url,
+                data: param,
+                type: "GET",
+                dataType: 'json',
+                headers: _set(input, 'urlHeaders'),
+                success: func,
+                error: errorFunc
+            })
+
+
+
         }
 
     }
@@ -2415,6 +2446,11 @@
          * Set url params for the remote data
          */
         urlParam: {},
+
+        /**
+         * Headers for json request
+         */
+        urlHeaders: {},
 
         /**
          * If search interval is too short, will execute

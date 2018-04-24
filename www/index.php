@@ -342,6 +342,9 @@ $('#test').inputpicker({
 <script>
 $('#test').inputpicker({
     url: './example-json.php',
+    urlHeaders: {
+        \"X-Token\": \"This is a test token\"
+    },
     fields:['id','name','hasc'],
     fieldText:'name',
     fieldValue:'id',
@@ -362,6 +365,9 @@ $('#test').inputpicker({
 
                                 width:'100%',
                                 url: './example-json.php',
+                                urlHeaders: {
+                                    "X-Token": "This is a test token"
+                                },
                                 fields:['id','name','hasc'],
                                 fieldText:'name',
                                 fieldValue:'id',
