@@ -668,7 +668,7 @@
 
         if (_set(input, 'responsive')){
             var inputpicker_div = _getInputpickerDiv(input);
-            inputpicker_div.css('width', _set(input, 'width'));
+            // inputpicker_div.css('width', _set(input, 'width'));
             $(window).bind('resize', function(){
                 _setWrappedListWidthAndHeight(input);
                 _setWrappedListPosition(input);
