@@ -47,12 +47,13 @@
 
                     // Clone input
                     var input = original.clone();
+                    var input_disabled = input.prop('disabled');
 
                     // Initiate input
                     input.val('').data('inputpicker-uuid', uuid).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
 
                     // Inputpicker div ( wrap fake input and arrow )
-                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"position:relative;overflow:auto;height:100%;\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>")
+                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"position:relative;overflow:auto;height:100%;\">" + "<span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\" style=\"" + ( input_disabled ? "display:none;" : "") + "\"  ><b></b></span>" + "</div>")
                         .append(input)
                         .on('click', function (e) {
 
@@ -112,7 +113,16 @@
                         var original = $(this);
                         var input = _i(original);
                         _setValue(input, original.val());
-                    });
+                    }).on('disable.inputpicker', function () {
+                        var original = $(this);
+                        var input = _i(original);
+                        _disable(input, true);
+                    }).on('enable.inputpicker', function () {
+                        var original = $(this);
+                        var input = _i(original);
+                        _disable(input, false);
+                    })
+                    ;
 
                     // input Events
                     input.on('focus.inputpicker', _eventFocus)
@@ -376,6 +386,16 @@
             //     var input = $(this);
             // });
         },
+
+        // deprecated by prop('disabled', true);
+        // disable: function (v) {
+        //     return this.each(function () {
+        //         var input = _i($(this));
+        //         var uuid = _uuid(input);
+        //         _disable(input, v);
+        //     });
+        //
+        // },
 
         // resize: function(w, h){
         //     return this.each(function () {
@@ -1022,6 +1042,18 @@
     function _inputValueEqualToOriginalValue(input) {
         dd("_inputValueEqualToOriginalValue: _i(" + _i(input).val() + ") == _o(" + _o(input).val() + ")" );
         return _i(input).data('value') == _o(input).val();
+    }
+
+    function _disable(input, v) {
+        _o(input).prop('disabled', v);
+        input.prop('disabled', v);
+        var input_div = _getInputpickerDiv(input);
+        if ( v ){
+            input_div.find('.inputpicker-arrow').hide();
+        }
+        else{
+            input_div.find('.inputpicker-arrow').show();
+        }
     }
 
 
@@ -1712,6 +1744,7 @@
             data = null;
         }
 
+        var input_initial_disabled = input.prop('disabled');
         // Add a loading div for
         input.addClass('loading').prop('disabled', true);
         if(_isMSIE())   input.addClass('loading-msie-patch');
@@ -1748,7 +1781,8 @@
                     methods.data.call(input, data);
                 }
 
-                input.removeClass('loading').prop('disabled', false);
+                // input.removeClass('loading').prop('disabled', false);
+                input.removeClass('loading').prop('disabled', input_initial_disabled);
                 if(_isMSIE())   input.removeClass('loading-msie-patch');
 
                 if(typeof func == 'function'){
@@ -1771,7 +1805,8 @@
                 func.call(this, input, data);
             }
 
-            input.removeClass('loading').prop('disabled', false);
+            // input.removeClass('loading').prop('disabled', false);
+            input.removeClass('loading').prop('disabled', input_initial_disabled);
             if(_isMSIE())   input.removeClass('loading-msie-patch');
         }
 
@@ -2312,10 +2347,19 @@
             }
         }
         return -1;
-
     }
 
     // -------------------------------------------------------------------------------------------
+    jQuery.propHooks.disabled = {
+        set: function (el, value) {
+            if (el.disabled !== value) {
+                el.disabled = value;
+                value && $(el).trigger('disable.inputpicker');
+                !value && $(el).trigger('enable.inputpicker');
+            }
+        }
+    };
+
     $.fn.inputpicker = function (method) {
         if(!this.length) return this;
         if(typeof method == 'object' || !method){
