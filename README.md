@@ -1,3 +1,6 @@
+# Warning: The repo is in maintenance mode now. 
+Reason: More and more projects are migrating their front-end framework to React, Vue or Angular, so I would not add new features in future but still would be able to solve issues till the end of 2019.  
+
 # jQuery UI Inputpicker
 
 This is a jQuery UI input picker plugin built to match with other official jQuery UI widgets. It would blend nicely multiple columns view with your form. The plugin is very easy to integrate in your form for your inputs.
