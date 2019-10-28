@@ -47,13 +47,12 @@
 
                     // Clone input
                     var input = original.clone();
-                    var input_disabled = input.prop('disabled');
 
                     // Initiate input
                     input.val('').data('inputpicker-uuid', uuid).addClass('inputpicker-input').prop('id', 'inputpicker-' + uuid).prop('name', 'inputpicker-' + uuid);
 
                     // Inputpicker div ( wrap fake input and arrow )
-                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"position:relative;overflow:auto;height:100%;\">" + "<span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\" style=\"" + ( input_disabled ? "display:none;" : "") + "\"  ><b></b></span>" + "</div>")
+                    var inputpicker_div = $("<div id=\"inputpicker-div-" + uuid + "\" class=\"inputpicker-div\" data-uuid=\"" + uuid + "\" style=\"position:relative;overflow:auto;height:100%;\"><span class=\"inputpicker-arrow\" data-uuid=\"" + uuid + "\" onclick=\"$(this).parent().find('input').inputpicker('toggle');event.stopPropagation();\"><b></b></span></div>")
                         .append(input)
                         .on('click', function (e) {
 
@@ -113,16 +112,7 @@
                         var original = $(this);
                         var input = _i(original);
                         _setValue(input, original.val());
-                    }).on('disable.inputpicker', function () {
-                        var original = $(this);
-                        var input = _i(original);
-                        _disable(input, true);
-                    }).on('enable.inputpicker', function () {
-                        var original = $(this);
-                        var input = _i(original);
-                        _disable(input, false);
-                    })
-                    ;
+                    });
 
                     // input Events
                     input.on('focus.inputpicker', _eventFocus)
@@ -174,6 +164,7 @@
                     }
 
                 });
+                _initPP();
             })
         },
 
@@ -276,7 +267,18 @@
                 });
             }
         },
-
+        /**
+         * { function_description }
+         *
+         * @param      {Function}  popover  The popover
+         */
+        /*popover: function(popover){
+            if(typeof popover != 'undefined'){
+                return this.each(function(){
+                    _set(_i(this),'popover');
+                })
+            }
+        },*/
         /*
         // Replace as new function to support selecting by specific field
         element: function (value, field) {
@@ -386,16 +388,6 @@
             //     var input = $(this);
             // });
         },
-
-        // deprecated by prop('disabled', true);
-        // disable: function (v) {
-        //     return this.each(function () {
-        //         var input = _i($(this));
-        //         var uuid = _uuid(input);
-        //         _disable(input, v);
-        //     });
-        //
-        // },
 
         // resize: function(w, h){
         //     return this.each(function () {
@@ -571,7 +563,7 @@
     }
 
     // Load remote json data
-    function _execJSON(input, param, func, errorFunc) {
+    function _execJSON(input, param, func) {
         var url = _set(input, 'url');
 
         if(typeof param == 'undefined' && typeof func == 'undefined'){
@@ -587,11 +579,6 @@
             return;
         }
 
-        if (typeof errorFunc != 'function'){
-            errorFunc = function(ret){
-                alert(ret);
-            }
-        }
 
         // pagination: true,   // false: no
         //     pageMode: '',  // '' or 'scroll'
@@ -625,24 +612,10 @@
         if(_set(input, 'urlCache') ){
             if( typeof cacheData == 'undefined' ){
                 dd('Set cache:' + _name(input));
-                // $.get(url, param, function (ret) {
-                //     _cache(input, param_serialised, ret);
-                //     func(ret);
-                // }, "json");
-
-                $.ajax({
-                    url : url,
-                    data: param,
-                    type: "GET",
-                    dataType: 'json',
-                    headers: _set(input, 'urlHeaders'),
-                    success:function (ret) {
-                        _cache(input, param_serialised, ret);
-                        func(ret);
-                    },
-                    error: errorFunc
-                })
-
+                $.get(url, param, function (ret) {
+                    _cache(input, param_serialised, ret);
+                    func(ret);
+                }, "json");
             }
             else{
                 func(cacheData);
@@ -651,19 +624,7 @@
         }
         else{
             dd('Not use cache');
-            // $.get(url, param, func, "json");
-            $.ajax({
-                url : url,
-                data: param,
-                type: "GET",
-                dataType: 'json',
-                headers: _set(input, 'urlHeaders'),
-                success: func,
-                error: errorFunc
-            })
-
-
-
+            $.get(url, param, func, "json");
         }
 
     }
@@ -688,7 +649,7 @@
 
         if (_set(input, 'responsive')){
             var inputpicker_div = _getInputpickerDiv(input);
-            // inputpicker_div.css('width', _set(input, 'width'));
+            inputpicker_div.css('width', _set(input, 'width'));
             $(window).bind('resize', function(){
                 _setWrappedListWidthAndHeight(input);
                 _setWrappedListPosition(input);
@@ -697,10 +658,10 @@
         }
 
 
-
-
     }
-
+    function _initPP(){
+        $('[data-toggle="popover"]').popover()
+    }
     function _initMultiple(input) {
         var inputpicker_div = _getInputpickerDiv(input);
         if (!inputpicker_div.find('.inputpicker-multiple').length){
@@ -848,7 +809,8 @@
                 'overflow' : 'auto'
             }).addClass('inputpicker-wrapped-list')
                 .data('inputpicker-uuid', 0)
-                .appendTo(document.body);
+                .appendTo(document.body)
+                .popover();
 
             $(document).on('click', function (e) {
                 if(!($(e.target).hasClass('inputpicker-input'))){
@@ -1044,18 +1006,6 @@
         return _i(input).data('value') == _o(input).val();
     }
 
-    function _disable(input, v) {
-        _o(input).prop('disabled', v);
-        input.prop('disabled', v);
-        var input_div = _getInputpickerDiv(input);
-        if ( v ){
-            input_div.find('.inputpicker-arrow').hide();
-        }
-        else{
-            input_div.find('.inputpicker-arrow').show();
-        }
-    }
-
 
     /**
      * Get / Set settings
@@ -1144,7 +1094,7 @@
                         continue;
                     }
 
-                    var fieldValue = data[i][filterField[k]].toString().toLowerCase();
+                    var fieldValue = (data[i][filterField[k]])?data[i][filterField[k]].toString().toLowerCase():"";
                     if (filterType == 'start' && fieldValue.substr(0, input_value_low.length) == input_value_low) {
                         isShown = true;
                     }
@@ -1307,7 +1257,7 @@
         output += _renderCss(input);
 
         // Draw table
-        output += "<table class=\"table small\">" ;
+        output += "<table class=\"table \">" ;
 
         // Show head
         output += _renderTableHeader(input);
@@ -1330,10 +1280,15 @@
                     }
 
                     output += '<td';
-                    var html_style = "";
+                    var html_style = ""; var custom_style="";
                     if(_isObject(fields[j])){
                         if(fields[j]['width']){
                             html_style += "width:" + fields[j]['width'];
+                        }
+                        //add custom style like no wrap column n others
+                        //this is multi function adding style type on evert column
+                        if(fields[j]['col_custom']){
+                            html_style +=" "+fields[j]['col_custom'];
                         }
                         // ...
                     }
@@ -1417,6 +1372,7 @@
         var uuid = _uuid(input);
         // var data = _set(input, 'data');
         var data = _filterData(input);
+        var popover = _set(input,'popover');
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
         var filterOpen = _set(input, 'filterOpen');
@@ -1489,9 +1445,10 @@
 
                     var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
                     var text = typeof data[i][k] != 'undefined' ? data[i][k] : '';
-
-                    if ( value && text.toString().toLowerCase().indexOf(input_keyword_low) != -1){
-                        tr_highlight = true;
+                    if(text){
+                        if ( value && text.toString().toLowerCase().indexOf(input_keyword_low) != -1){
+                            tr_highlight = true;
+                        }
                     }
 
                     // Check if value is empty and set it is shown value
@@ -1505,7 +1462,11 @@
                         if(fields[j]['width']){
                             html_style += "width:" + fields[j]['width'];
                         }
-
+                        //add custom style like no wrap column n others
+                        //this is multi function adding style type on evert column
+                        if(fields[j]['col_custom']){
+                            html_style +=" "+fields[j]['col_custom'];
+                        }
                         // ...
                     }
                     output_tds += ' style="' + html_style + '" ';
@@ -1524,9 +1485,12 @@
                 if( value == data[i][ fieldValue ]){
                     tr_class += " inputpicker-active";
                 }
+                var ppover ="";
+                if(typeof popover!='undefined'){
+                    ppover ='data-toggle="popover" data-container="body" data-placement="top" data-trigger="hover" data-content="'+data[i][fieldValue]+'"';
+                }
 
-
-                output += '<tr class=" ' + tr_class + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
+                output +='<tr '+ppover+' d class=" ' + tr_class + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
                 output += output_tds;
                 output += '</tr>';
             }
@@ -1639,7 +1603,7 @@
                 if (typeof data[i][field_name] == 'undefined'){
                     continue;
                 }
-                var fieldValue = data[i][field_name].toString().toLowerCase();
+                var fieldValue = (data[i][field_name])? data[i][field_name].toString().toLowerCase():data[i][field_name];
                 if (fieldValue.substr(0, input_value_low.length) == input_value_low) {
                     tr_new_active = elements[x];
                     break;
@@ -1744,7 +1708,6 @@
             data = null;
         }
 
-        var input_initial_disabled = input.prop('disabled');
         // Add a loading div for
         input.addClass('loading').prop('disabled', true);
         if(_isMSIE())   input.addClass('loading-msie-patch');
@@ -1773,16 +1736,14 @@
                 // var data = ret['data'];
                 // Check and format data
                 if (! _isArray(data)  ){
-                    _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
+                   _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
                     data = _set(input, 'data');    // Still use old data
-                }
-                else{   // apply new data
+                }else{   // apply new data
                     // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data) );
                     methods.data.call(input, data);
                 }
 
-                // input.removeClass('loading').prop('disabled', false);
-                input.removeClass('loading').prop('disabled', input_initial_disabled);
+                input.removeClass('loading').prop('disabled', false);
                 if(_isMSIE())   input.removeClass('loading-msie-patch');
 
                 if(typeof func == 'function'){
@@ -1805,8 +1766,7 @@
                 func.call(this, input, data);
             }
 
-            // input.removeClass('loading').prop('disabled', false);
-            input.removeClass('loading').prop('disabled', input_initial_disabled);
+            input.removeClass('loading').prop('disabled', false);
             if(_isMSIE())   input.removeClass('loading-msie-patch');
         }
 
@@ -2347,19 +2307,10 @@
             }
         }
         return -1;
+
     }
 
     // -------------------------------------------------------------------------------------------
-    jQuery.propHooks.disabled = {
-        set: function (el, value) {
-            if (el.disabled !== value) {
-                el.disabled = value;
-                value && $(el).trigger('disable.inputpicker');
-                !value && $(el).trigger('enable.inputpicker');
-            }
-        }
-    };
-
     $.fn.inputpicker = function (method) {
         if(!this.length) return this;
         if(typeof method == 'object' || !method){
@@ -2492,11 +2443,6 @@
         urlParam: {},
 
         /**
-         * Headers for json request
-         */
-        urlHeaders: {},
-
-        /**
          * If search interval is too short, will execute
          */
         urlDelay: 0,
@@ -2535,7 +2481,8 @@
 
         responsive: true,
 
-        _bottom: ''
+        _bottom: '',
+        popover:''
 
     };
 
