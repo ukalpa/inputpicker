@@ -490,7 +490,7 @@
             });
         },
 
-        debug: true
+        debug: false
     };
 
     // ----------------------------------------------------------------
@@ -1929,7 +1929,7 @@
 
 
     }
-    
+
     function _setValueByActiveForMultiple(input) {
 
 
@@ -1970,13 +1970,13 @@
         else{   // Not selected, No any change
             return false;
         }
-        
+
     }
-    
-    
-    
-    
-    
+
+
+
+
+
 
     function _isWrappedListVisible(input) {
         var wrapped_list = _getWrappedList();
