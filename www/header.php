@@ -39,6 +39,17 @@ $current_page = strtolower(basename($_SERVER['SCRIPT_FILENAME']));
 	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
 	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
 	<link rel="stylesheet" href="./style.css?<?php echo time()?>" >
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-100554028-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-100554028-1');
+    </script>
+
 </head>
 <body>
 <header class="navbar">
