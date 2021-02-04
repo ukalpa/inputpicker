@@ -267,6 +267,39 @@
                 });
             }
         },
+
+        /**
+         * get highlighted row data
+         * @returns {*}
+         */
+        data_highlighted: function (){
+            var input = _i($(this));
+            var fieldValue = _set(input, 'fieldValue');
+            var data = _formatData(fieldValue, methods.data.call(input));
+            var tr_active = _getWrappedListElements(true);
+            if (tr_active.length){
+                var i = tr_active.data('i');
+                return data[i];
+            }
+        },
+
+        /**
+         * get highlighted row value
+         * @returns {*}
+         */
+        value_highlighted: function (){
+            var input = _i($(this));
+            var fieldValue = _set(input, 'fieldValue');
+            var data = _formatData(fieldValue, methods.data.call(input));
+            var input_value = input.val();
+            var tr_active = _getWrappedListElements(true);
+            if (tr_active.length){
+                var i = tr_active.data('i');
+                if ( data[i]){
+                    return data[i][fieldValue];
+                }
+            }
+        },
         /**
          * { function_description }
          *
@@ -879,6 +912,7 @@
      * @private
      */
     function _changeWrappedListSelected(input, offset) {
+        var original = _o(input);
         var wrapped_list = _getWrappedList();
         var wrapped_elements = _getWrappedListElements();
         // check if wrapped_list
@@ -888,18 +922,23 @@
             // Select first if not any selected
             if ( wrapped_elements.length && _getWrappedListElements(true).length == 0){
                 wrapped_elements.first().addClass('inputpicker-active');
+                original.trigger('change_highlight.inputpicker');
             }
             else{
                 var tr_active = _getWrappedListElements(true);
                 if (offset){    // Change active if necessary
                     if ( offset < 0 && tr_active.prev().length ){
                         tr_active.removeClass('inputpicker-active').prev().addClass('inputpicker-active');
+                        original.trigger('change_highlight.inputpicker');
+
                         if (tr_active.prev().position().top < tr_active.outerHeight()) {
                             wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_active.outerHeight());
                         }
                     }
                     else if (  offset > 0 && tr_active.next().length) {
                         tr_active.removeClass('inputpicker-active').next().addClass('inputpicker-active');
+                        original.trigger('change_highlight.inputpicker');
+
                         if ( ( tr_active.next().position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight()) {
                             wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_active.outerHeight());
                         }
@@ -1234,6 +1273,7 @@
      */
     function _dataRenderMultiple(input){
 
+        var original = _o(input);
         var inputpicker_div = _getInputpickerDiv(input);
         var wrapped_list = _getWrappedList(input);
         var uuid = _uuid(input);
@@ -1317,6 +1357,7 @@
                     $(this).removeClass('inputpicker-active');    //.removeClass('active')
                 });
                 that.addClass('inputpicker-active');
+                original.trigger('change_highlight.inputpicker');
             }).on('click', function (e) {
                 var self = $(this);
                 var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
@@ -1367,6 +1408,7 @@
      * @private
      */
     function _dataRenderDefault(input) {
+        var original = _o(input);
         var inputpicker_div = _getInputpickerDiv(input);
         var wrapped_list = _getWrappedList(input);
         var uuid = _uuid(input);
@@ -1515,6 +1557,7 @@
                     $(this).removeClass('inputpicker-active');
                 });
                 that.addClass('inputpicker-active');
+                original.trigger('change_highlight.inputpicker');
             }).on('click', function (e) {
                 var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
                 var input = $('#inputpicker-' + uuid);
@@ -1546,6 +1589,7 @@
      * @private
      */
     function _matchActiveInRender(input) {
+        var original = _o(input);
         var wrapped_list = _getWrappedList(input);
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
@@ -1615,6 +1659,8 @@
                     tr_active.removeClass('inputpicker-active');
                 }
                 $(tr_new_active).addClass('inputpicker-active');
+                original.trigger('change_highlight.inputpicker');
+
                 tr_active = $(tr_new_active);
 
                 // dd(tr_active, tr_active.position().top, tr_active.outerHeight(), wrapped_list.scrollTop(), wrapped_list.scrollTop() - tr_active.outerHeight() );
@@ -2203,6 +2249,7 @@
 
     function _eventKeyUp(e) {
         var input = $(this);
+        var original = _o(input);
         var wrapped_list = _getWrappedList();
         // if(!_isWrappedListVisible()){
         //     e.stopPropagation();
@@ -2229,9 +2276,6 @@
                 return ;
             }
 
-
-
-
             // Check if delay
             var delay = parseFloat(_set(input, 'urlDelay'));
             var delayHandler = _set(input, 'delayHandler');
@@ -2246,6 +2290,7 @@
                 var wrapped_elements = _getWrappedListElements();
                 if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
                     wrapped_list.first().addClass('inputpicker-active');
+                    original.trigger('change_highlight.inputpicker');
                 }
                 _matchActiveInRender(input);
                 _matchHighlightInRender(input);
@@ -2281,11 +2326,15 @@
             var wrapped_elements = _getWrappedListElements();
             if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
                 wrapped_list.first().addClass('inputpicker-active');
+                original.trigger('change_highlight.inputpicker');
             }
             _matchActiveInRender(input);
             _matchHighlightInRender(input);
 
         }
+
+
+
     }
 
     function _isDefined(v) {

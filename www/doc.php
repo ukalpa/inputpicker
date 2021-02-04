@@ -238,7 +238,37 @@
                                                 <br /><i><small>Select the element which the 'text' field is 'AKL'</small></i>
                                             </li>
                                             <li>Return: <br > - Found: {"value":"AKL", "text":"Auckland", "country":"NZ"}<br />
-                                            - Not Found: null</li>
+                                                - Not Found: null</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>data_highlighted</td>
+                                    <td>var</td>
+                                    <td>Get the highlighted element object
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>
+                                                $('#test').inputpicker('data_highlighted');
+                                            </li>
+                                            <li>Return: <br > - Found: {"value":"AKL", "text":"Auckland", "country":"NZ"}<br />
+                                                - Not Found: undefined</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>value_highlighted</td>
+                                    <td>var</td>
+                                    <td>Get the highlighted element value
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>
+                                                $('#test').inputpicker('value_highlighted')
+                                            </li>
+                                            <li>Return: <br > - Found: "AKL"<br />
+                                                - Not Found: undefined</li>
                                         </ul>
                                     </td>
                                 </tr>
@@ -547,6 +577,15 @@
                                     <td>
                                         <ul class="list-unstyled">
                                             <li>$('#test').change(function(input){ //... })</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>change_highlight.inputpicker(e)</td>
+                                    <td>Activate after changing highlight option in the dropbox</td>
+                                    <td>
+                                        <ul class="list-unstyled">
+                                            <li>$('#test').on('change_highlight.inputpicker', function(input){ //... })</li>
                                         </ul>
                                     </td>
                                 </tr>
