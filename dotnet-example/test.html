@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>InputPicker – .NET Test</title>
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <!-- InputPicker CSS (adjust path if needed) -->
+    <link rel="stylesheet" href="../../src/jquery.inputpicker.css" />
+
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 12px;
+        }
+
+        .section-title {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: .08em;
+            margin-bottom: .5rem;
+        }
+
+        .badge-new {
+            background: #198754;
+            font-size: .7rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5" style="max-width:780px">
+
+        <h1 class="h4 fw-bold mb-1">jQuery InputPicker — .NET Test Page</h1>
+        <p class="text-muted mb-4">
+            API backend: <code>ASP.NET Core 8 Minimal API</code> &nbsp;|&nbsp;
+            Replaces <code>example-json.php</code>
+        </p>
+
+        <!-- ================================================================
+         TEST 1 – Basic remote search (no new features)
+    ================================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="section-title">Test 1 — Basic remote URL search</div>
+                <p class="small text-muted">Type a district name. Data is fetched from <code>/api/districts?q=…</code>
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">District</label>
+                        <input id="test1" class="form-control" name="district1" />
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div id="test1-value" class="form-text">Selected value: <strong>–</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================
+         TEST 2 – openAfterLoad (NEW)
+    ================================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="section-title">
+                    Test 2 — <code>openAfterLoad</code>
+                    <span class="badge badge-new text-white ms-1">NEW</span>
+                </div>
+                <p class="small text-muted">
+                    Dropdown opens automatically after data loads.
+                    Simulates a 1 s server delay via <code>?sleep=1</code>.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">District (auto-opens after 1 s)</label>
+                        <input id="test2" class="form-control" name="district2" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================
+         TEST 3 – nextPicker (NEW)
+    ================================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="section-title">
+                    Test 3 — <code>nextPicker</code> chained pickers
+                    <span class="badge badge-new text-white ms-1">NEW</span>
+                </div>
+                <p class="small text-muted">
+                    Search for <strong>"zzz"</strong> in Picker A → no results → jumps to Picker B.
+                    Searching with an <em>empty</em> field stays in the same picker.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Picker A — District search</label>
+                        <input id="test3a" class="form-control" name="district3a" />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-center justify-content-center text-muted">
+                        → no results →
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Picker B — Region search</label>
+                        <input id="test3b" class="form-control" name="district3b" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================
+         TEST 4 – autoOpen via tab (NEW fix)
+    ================================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="section-title">
+                    Test 4 — <code>autoOpen</code> fix (pending-open during URL load)
+                    <span class="badge badge-new text-white ms-1">FIXED</span>
+                </div>
+                <p class="small text-muted">
+                    Tab into the field while data is still loading (2 s delay).
+                    The dropdown should open <em>after</em> data arrives — not be silently dropped.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Dummy field (Tab from here)</label>
+                        <input class="form-control" placeholder="Tab from here →" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">District (autoOpen + 2 s delay)</label>
+                        <input id="test4" class="form-control" name="district4" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================
+         TEST 5 – Pagination
+    ================================================================ -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="section-title">Test 5 — Pagination</div>
+                <p class="small text-muted">
+                    Server-side pagination via <code>?p=&amp;per_page=</code>. 10 rows per page.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">District (paginated)</label>
+                        <input id="test5" class="form-control" name="district5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /container -->
+
+    <!-- ====================================================================
+     Scripts
+==================================================================== -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../src/jquery.inputpicker.js"></script>
+
+    <script>
+        $(function () {
+
+            // Change the base URL if you run the .NET API on a different port
+            var API_BASE = 'http://localhost:5000/api/districts';
+
+            // ----------------------------------------------------------------
+            // Test 1 – Basic remote search
+            // ----------------------------------------------------------------
+            $('#test1').inputpicker({
+                url: API_BASE,
+                fieldValue: 'id',
+                fieldText: 'name',
+                fields: [
+                    { name: 'id', text: 'ID', width: '50px' },
+                    { name: 'name', text: 'District' },
+                    { name: 'hasc', text: 'HASC', width: '60px' },
+                    { name: 'regionName', text: 'Region' }
+                ],
+                headShow: true,
+                filterOpen: true
+            });
+
+            $('#test1').on('change', function () {
+                $('#test1-value strong').text($(this).val() || '–');
+            });
+
+            // ----------------------------------------------------------------
+            // Test 2 – openAfterLoad  🆕
+            // ----------------------------------------------------------------
+            $('#test2').inputpicker({
+                url: API_BASE + '?sleep=1',
+                fieldValue: 'id',
+                fieldText: 'name',
+                fields: [
+                    { name: 'name', text: 'District' },
+                    { name: 'regionName', text: 'Region' }
+                ],
+                headShow: true,
+                openAfterLoad: true   // ← NEW: opens automatically after data loads
+            });
+
+            // ----------------------------------------------------------------
+            // Test 3 – nextPicker  🆕
+            // ----------------------------------------------------------------
+            $('#test3a').inputpicker({
+                url: API_BASE,
+                fieldValue: 'id',
+                fieldText: 'name',
+                fields: [{ name: 'name', text: 'District' }, { name: 'regionName', text: 'Region' }],
+                headShow: true,
+                filterOpen: true,
+                openAfterLoad: true,
+                nextPicker: '#test3b'   // ← NEW: jump here when no results
+            });
+
+            $('#test3b').inputpicker({
+                url: API_BASE,
+                fieldValue: 'hasc',
+                fieldText: 'regionName',
+                fields: [{ name: 'regionName', text: 'Region' }, { name: 'hasc', text: 'Code' }],
+                headShow: true,
+                filterOpen: true,
+                openAfterLoad: true
+            });
+
+            // ----------------------------------------------------------------
+            // Test 4 – autoOpen pending-open fix  🔧
+            //   Tab into field while it is still loading (sleep=2)
+            //   Dropdown should open after data arrives
+            // ----------------------------------------------------------------
+            $('#test4').inputpicker({
+                url: API_BASE + '?sleep=2',
+                fieldValue: 'id',
+                fieldText: 'name',
+                fields: [{ name: 'name', text: 'District' }, { name: 'regionName', text: 'Region' }],
+                headShow: true,
+                autoOpen: true   // ← FIXED: now works even when input was disabled during load
+            });
+
+            // ----------------------------------------------------------------
+            // Test 5 – Pagination
+            // ----------------------------------------------------------------
+            $('#test5').inputpicker({
+                url: API_BASE,
+                fieldValue: 'id',
+                fieldText: 'name',
+                fields: [
+                    { name: 'id', text: 'ID', width: '50px' },
+                    { name: 'name', text: 'District' },
+                    { name: 'regionName', text: 'Region' }
+                ],
+                headShow: true,
+                pagination: true,
+                limit: 10,
+                pageField: 'p',
+                pageLimitField: 'per_page',
+                pageCountField: 'count'
+            });
+
+        });
+    </script>
+</body>
+
+</html>

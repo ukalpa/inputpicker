@@ -4,7 +4,7 @@
  * License: MIT
  */
 
-(function(factory) {
+(function (factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
         define(['jquery'], factory);
@@ -32,12 +32,12 @@
                 if (original.hasClass('inputpicker-original') && _getInputpickerDiv(_i(original))) {
                     var orginial_css = original.data('inputpicker-original-css');
                     //inputpicker-overflow-hidden
-                      _getInputpickerDiv(_i(original)).closest('.inputpicker-overflow-hidden').remove();
+                    _getInputpickerDiv(_i(original)).closest('.inputpicker-overflow-hidden').remove();
                     original.removeClass(function (index, className) {
-                        return (className.match (/\binputpicker-\S+/g) || []).join(' ');
+                        return (className.match(/\binputpicker-\S+/g) || []).join(' ');
                     });
                     original.css({
-                        top:orginial_css['top'],
+                        top: orginial_css['top'],
                         position: orginial_css['position']
                     });
                 }
@@ -135,7 +135,7 @@
 
                 // Merge settings by orders: 1.options > 2 attr > 3.defaults
                 // If option is array, set it as data
-                var settings = $.extend({cache: {}}, $.fn.inputpicker.defaults, _options, Array.isArray(options) ? {data: options} : options);
+                var settings = $.extend({ cache: {} }, $.fn.inputpicker.defaults, _options, Array.isArray(options) ? { data: options } : options);
 
                 // Set default value for fieldText
                 if (!settings['fieldText']) settings['fieldText'] = settings['fieldValue'];
@@ -163,6 +163,21 @@
                     if (!_setValue(input, original.val())) {
                     }
 
+                    // Open dropdown after data is loaded if openAfterLoad is set
+                    if (_set(input, 'openAfterLoad')) {
+                        var loadedData = _set(input, 'data');
+                        var nextPickerSelector = _set(input, 'nextPicker');
+                        if ((!loadedData || !loadedData.length) && nextPickerSelector) {
+                            // No data: close current and open the next picker
+                            _hideWrappedList();
+                            var nextEl = $(nextPickerSelector);
+                            if (nextEl.length) {
+                                nextEl.inputpicker('show');
+                            }
+                        } else {
+                            methods.show.call(input);
+                        }
+                    }
                 });
                 _initPP();
             })
@@ -272,12 +287,12 @@
          * get highlighted row data
          * @returns {*}
          */
-        data_highlighted: function (){
+        data_highlighted: function () {
             var input = _i($(this));
             var fieldValue = _set(input, 'fieldValue');
             var data = _formatData(fieldValue, methods.data.call(input));
             var tr_active = _getWrappedListElements(true);
-            if (tr_active.length){
+            if (tr_active.length) {
                 var i = tr_active.data('i');
                 return data[i];
             }
@@ -287,15 +302,15 @@
          * get highlighted row value
          * @returns {*}
          */
-        value_highlighted: function (){
+        value_highlighted: function () {
             var input = _i($(this));
             var fieldValue = _set(input, 'fieldValue');
             var data = _formatData(fieldValue, methods.data.call(input));
             var input_value = input.val();
             var tr_active = _getWrappedListElements(true);
-            if (tr_active.length){
+            if (tr_active.length) {
                 var i = tr_active.data('i');
-                if ( data[i]){
+                if (data[i]) {
                     return data[i][fieldValue];
                 }
             }
@@ -345,16 +360,16 @@
         element: function (value, field) {
             var original = _o($(this));
             var input = _i(original);
-            if (typeof value == 'undefined'){
+            if (typeof value == 'undefined') {
                 value = original.val();
             }
             var fieldValue = (typeof field === 'undefined') ? _set(input, 'fieldValue') : field;
 
             var data = _set(input, 'data');
-            if ( !data.length)  return null;   // No data
+            if (!data.length) return null;   // No data
             var index_i = -1;
-            for(var i = 0; i < data.length; i++){
-                if ( data[i][ fieldValue ] == value){
+            for (var i = 0; i < data.length; i++) {
+                if (data[i][fieldValue] == value) {
                     return data[i];
                 }
             }
@@ -455,7 +470,7 @@
                 if (_setValue(input, value)) {
                     original.trigger('change');
                 }
-                else{
+                else {
                 }
             });
         },
@@ -483,9 +498,9 @@
                 //     original.trigger('change');
                 // }
                 var arr_value = value ? value.toString().split(delimiter) : [];
-                var i = _inArray( v, arr_value);
+                var i = _inArray(v, arr_value);
 
-                if ( i > -1)   // Need to remove it
+                if (i > -1)   // Need to remove it
                 {
                     arr_value.splice(i, 1);
                     _setValue(input, arr_value.join(delimiter));
@@ -528,7 +543,7 @@
 
     // ----------------------------------------------------------------
     function dd() {
-        if(methods.debug) {
+        if (methods.debug) {
             var args = Array.prototype.slice.call(arguments);
             console.log(args.length == 1 ? args[0] : args);
         }
@@ -554,13 +569,13 @@
     }
 
     function _error(msg, input) {
-        if(typeof input != 'undefined'){
+        if (typeof input != 'undefined') {
             var original = _o(input);
-            if(original){
-                if(original.attr('name')){
+            if (original) {
+                if (original.attr('name')) {
                     msg += " for input[name=" + original.attr('name') + "]";
                 }
-                else if(original.attr('id')){
+                else if (original.attr('id')) {
                     msg += " for input[id=" + original.attr('id') + "]";
                 }
             }
@@ -569,8 +584,8 @@
     }
 
     function _alert(msg, input) {
-        if (typeof input != 'undefined'){
-            if(_name(input)){
+        if (typeof input != 'undefined') {
+            if (_name(input)) {
                 msg += ' input[name=' + _name(input) + ']';
             }
         }
@@ -579,7 +594,7 @@
 
     // Check data and format it
     function _formatData(fieldValue, data) {
-        if(!Array.isArray(data)){
+        if (!Array.isArray(data)) {
             return [];
         }
         if (data.length && typeof data[0] != 'object') {
@@ -599,15 +614,15 @@
     function _execJSON(input, param, func) {
         var url = _set(input, 'url');
 
-        if(typeof param == 'undefined' && typeof func == 'undefined'){
+        if (typeof param == 'undefined' && typeof func == 'undefined') {
             _alert('The param is incorrect. input[name=' + _name(input) + ']');
             return;
         }
-        if (typeof func == 'undefined' && typeof param == 'function'){
+        if (typeof func == 'undefined' && typeof param == 'function') {
             func = param;
             param = {};
         }
-        if (typeof func != 'function'){
+        if (typeof func != 'function') {
             _alert('The callback function is incorrect. input[name=' + _name(input) + ']');
             return;
         }
@@ -619,7 +634,7 @@
         //     pageLimitField: 'per_page',
         //     pageLimit: 10,
         //     pageCurrent: 1,
-        if (_pagination(input)){
+        if (_pagination(input)) {
             // dd("param:" );
             // dd(param);
             // dd( "_set(input, 'pageField'):" + _set(input, 'pageField'));
@@ -632,7 +647,7 @@
 
         param = $.extend({
             q: input.val(),
-            limit : _set(input, 'limit'),
+            limit: _set(input, 'limit'),
             fieldValue: _set(input, 'fieldValue'),
             fieldText: _set(input, 'fieldText'),
             value: _o(input).val()
@@ -642,20 +657,20 @@
 
 
         var cacheData = _cache(input, param_serialised);
-        if(_set(input, 'urlCache') ){
-            if( typeof cacheData == 'undefined' ){
+        if (_set(input, 'urlCache')) {
+            if (typeof cacheData == 'undefined') {
                 dd('Set cache:' + _name(input));
                 $.get(url, param, function (ret) {
                     _cache(input, param_serialised, ret);
                     func(ret);
                 }, "json");
             }
-            else{
+            else {
                 func(cacheData);
                 dd('Use cache');
             }
         }
-        else{
+        else {
             dd('Not use cache');
             $.get(url, param, func, "json");
         }
@@ -673,17 +688,17 @@
     function _init(input) {
 
         // Set
-        if ( _typeIsMultiple(input)) {
+        if (_typeIsMultiple(input)) {
             _initMultiple(input);
         }
-        else if( _typeIsTag(input)) {
+        else if (_typeIsTag(input)) {
             _initTag(input);
         }
 
-        if (_set(input, 'responsive')){
+        if (_set(input, 'responsive')) {
             var inputpicker_div = _getInputpickerDiv(input);
             inputpicker_div.css('width', _set(input, 'width'));
-            $(window).bind('resize', function(){
+            $(window).bind('resize', function () {
                 _setWrappedListWidthAndHeight(input);
                 _setWrappedListPosition(input);
 
@@ -692,12 +707,12 @@
 
 
     }
-    function _initPP(){
+    function _initPP() {
         $('[data-toggle="popover"]').popover()
     }
     function _initMultiple(input) {
         var inputpicker_div = _getInputpickerDiv(input);
-        if (!inputpicker_div.find('.inputpicker-multiple').length){
+        if (!inputpicker_div.find('.inputpicker-multiple').length) {
             var inputpicker_multiple_div = $("<div class=\"inputpicker-multiple\" style=\"\"><ul class=\"\">" +
                 // "<li class=\"inputpicker-element\">Text 1 <a href=\"#\">x</a></li>" +
                 "</ul></div>").prependTo(inputpicker_div);
@@ -709,7 +724,7 @@
                 .css('left', '0px')
                 // To measure the length of input
                 .append("<span class=\"input-span\" style=\"display: none;\" ></span>")
-            ;
+                ;
 
 
             input.removeClass().width(1)
@@ -731,7 +746,7 @@
 
     function _initTag(input) {
         var inputpicker_div = _getInputpickerDiv(input);
-        if (!inputpicker_div.find('.inputpicker-multiple').length){
+        if (!inputpicker_div.find('.inputpicker-multiple').length) {
             var inputpicker_multiple_div = $("<div class=\"inputpicker-multiple\" style=\"\"><ul class=\"\"></ul></div>").prependTo(inputpicker_div);
 
             inputpicker_div
@@ -741,7 +756,7 @@
                 .css('left', '0px')
                 // To measure the length of input
                 .append("<span class=\"input-span\" style=\"display: none;\" ></span>")
-            ;
+                ;
 
 
             input.removeClass().width(1)
@@ -832,21 +847,21 @@
         // return $.fn.inputpicker.wrapped_list;
 
         var wrapped_list = $('#inputpicker-wrapped-list');
-        if ( ! wrapped_list.length){
+        if (!wrapped_list.length) {
             wrapped_list = $('<div />', {
                 id: 'inputpicker-wrapped-list',
                 tabindex: -1
             }).css({
-                'display':'none',
+                'display': 'none',
                 'position': 'absolute',
-                'overflow' : 'auto'
+                'overflow': 'auto'
             }).addClass('inputpicker-wrapped-list')
                 .data('inputpicker-uuid', 0)
                 .appendTo(document.body)
                 .popover();
 
             $(document).on('click', function (e) {
-                if(!($(e.target).hasClass('inputpicker-input'))){
+                if (!($(e.target).hasClass('inputpicker-input'))) {
                     _hideWrappedList();
                 }
             });
@@ -857,9 +872,9 @@
             });
         }
 
-        if (typeof input != 'undefined'){
+        if (typeof input != 'undefined') {
             // Reset setting for wrapped list
-            if ( _uuid(wrapped_list) != _uuid(input)){
+            if (_uuid(wrapped_list) != _uuid(input)) {
                 _uuid(wrapped_list.html(""), _uuid(input));
             }
         }
@@ -874,13 +889,13 @@
         var setWidth = _set(input, 'width');
         var width, height;
 
-        if ( setWidth.substr(-1) == '%'){
+        if (setWidth.substr(-1) == '%') {
             var p = parseInt(setWidth.slice(0, -1));
             width = parseInt(p * inputpicker_div.outerWidth() / 100);
 
             // dd("p:" + p + "; width:" + width);
         }
-        else{
+        else {
             width = setWidth ? setWidth : inputpicker_div.outerWidth();
         }
         height = _set(input, 'height');
@@ -889,19 +904,19 @@
         wrapped_list.css({
             width: width,
             maxHeight: height,
-            overflowY:'auto'
+            overflowY: 'auto'
         });
     }
 
 
     function _setWrappedListPosition(input) {
         var inputpicker_div = _getInputpickerDiv(input);
-        var left = inputpicker_div.offset().left , //+ input.outerWidth()
+        var left = inputpicker_div.offset().left, //+ input.outerWidth()
             top = inputpicker_div.offset().top + inputpicker_div.outerHeight();
 
         _getWrappedList(input).css({
             left: inputpicker_div.offset().left + 'px',
-            top: ( inputpicker_div.offset().top + inputpicker_div.outerHeight() ) + 'px'
+            top: (inputpicker_div.offset().top + inputpicker_div.outerHeight()) + 'px'
         });
     }
 
@@ -916,18 +931,18 @@
         var wrapped_list = _getWrappedList();
         var wrapped_elements = _getWrappedListElements();
         // check if wrapped_list
-        if ( _isWrappedListVisible(input) && wrapped_elements.length){
+        if (_isWrappedListVisible(input) && wrapped_elements.length) {
             // Move to the first if not selected
 
             // Select first if not any selected
-            if ( wrapped_elements.length && _getWrappedListElements(true).length == 0){
+            if (wrapped_elements.length && _getWrappedListElements(true).length == 0) {
                 wrapped_elements.first().addClass('inputpicker-active');
                 original.trigger('change_highlight.inputpicker');
             }
-            else{
+            else {
                 var tr_active = _getWrappedListElements(true);
-                if (offset){    // Change active if necessary
-                    if ( offset < 0 && tr_active.prev().length ){
+                if (offset) {    // Change active if necessary
+                    if (offset < 0 && tr_active.prev().length) {
                         tr_active.removeClass('inputpicker-active').prev().addClass('inputpicker-active');
                         original.trigger('change_highlight.inputpicker');
 
@@ -935,11 +950,11 @@
                             wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_active.outerHeight());
                         }
                     }
-                    else if (  offset > 0 && tr_active.next().length) {
+                    else if (offset > 0 && tr_active.next().length) {
                         tr_active.removeClass('inputpicker-active').next().addClass('inputpicker-active');
                         original.trigger('change_highlight.inputpicker');
 
-                        if ( ( tr_active.next().position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight()) {
+                        if ((tr_active.next().position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight()) {
                             wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_active.outerHeight());
                         }
 
@@ -970,7 +985,7 @@
 
     // Get the target input
     function _i(original) {
-        return original.data('inputpicker-input') ? original.data('inputpicker-input') : original ;
+        return original.data('inputpicker-input') ? original.data('inputpicker-input') : original;
     }
 
     function _uuid(o, uuid) {
@@ -979,20 +994,20 @@
     }
 
     function _cache(input, name, value) {
-        var settings = input.data('inputpicker-settings') ;
-        if (typeof value == 'undefined'){
-            if (typeof name == 'undefined'){    // get all settings
+        var settings = input.data('inputpicker-settings');
+        if (typeof value == 'undefined') {
+            if (typeof name == 'undefined') {    // get all settings
                 return settings['cache'];
             }
-            else if( typeof name == 'object'){  // set all settings
+            else if (typeof name == 'object') {  // set all settings
                 settings['cache'] = name;
                 input.data('inputpicker-settings', settings);
             }
-            else{
+            else {
                 return settings['cache'][name];  // get setting
             }
         }
-        else{
+        else {
             settings['cache'][name] = value;
             input.data('inputpicker-settings', settings);
             return input;
@@ -1001,10 +1016,10 @@
 
     function _type(input) {
         var t = '';
-        if (_set(input, 'multiple')){
+        if (_set(input, 'multiple')) {
             t = 'multiple';
         }
-        else if (_set(input, 'tag')){
+        else if (_set(input, 'tag')) {
             t = 'tag';
         }
         return t;
@@ -1020,9 +1035,9 @@
 
     function _pagination(input) {
         var t = '';
-        if(_set(input, 'pagination')){
+        if (_set(input, 'pagination')) {
             t = _set(input, 'pageMode');
-            if (t != 'scroll')  t = 'tradition';
+            if (t != 'scroll') t = 'tradition';
         }
         return t;
     }
@@ -1031,7 +1046,7 @@
         return _set(input, 'creatable');
     }
 
-    function _selectMode(input){
+    function _selectMode(input) {
         return _set(input, 'selectMode');
     }
 
@@ -1041,7 +1056,7 @@
     function _selectModeIsEmpty(input) { return _set(input, 'selectMode') == 'empty'; }
 
     function _inputValueEqualToOriginalValue(input) {
-        dd("_inputValueEqualToOriginalValue: _i(" + _i(input).val() + ") == _o(" + _o(input).val() + ")" );
+        dd("_inputValueEqualToOriginalValue: _i(" + _i(input).val() + ") == _o(" + _o(input).val() + ")");
         return _i(input).data('value') == _o(input).val();
     }
 
@@ -1056,19 +1071,19 @@
      * @private
      */
     function _set(input, name, value) {
-        var settings = input.data('inputpicker-settings') ;
-        if (typeof value == 'undefined'){
-            if (typeof name == 'undefined'){    // get all settings
+        var settings = input.data('inputpicker-settings');
+        if (typeof value == 'undefined') {
+            if (typeof name == 'undefined') {    // get all settings
                 return settings;
             }
-            else if( typeof name == 'object'){  // set all settings
+            else if (typeof name == 'object') {  // set all settings
                 input.data('inputpicker-settings', name);
             }
-            else{
+            else {
                 return settings[name];  // get setting
             }
         }
-        else{   // set setting
+        else {   // set setting
             // if (name == 'data'){ // special check for "data"
             //     if( value = _formatData(input, value) ){
             //         settings[name] = value;
@@ -1088,8 +1103,8 @@
     function _filterData(input) {
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
-        var filterType =  _set(input, 'filterType');
-        var filterField =  _set(input, 'filterField');
+        var filterType = _set(input, 'filterType');
+        var filterField = _set(input, 'filterField');
         var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_value_low = input_value.toString().toLowerCase();
@@ -1098,17 +1113,17 @@
         // var page = ( typeof page == 'undefined' || page < 1 ) ? 1 : parseInt(page);
         // dd(data, limit, page);
 
-        if (!_set(input, 'filterOpen') || !input_value_low || _set(input, 'url') || !_isArray(data) ){
+        if (!_set(input, 'filterOpen') || !input_value_low || _set(input, 'url') || !_isArray(data)) {
             return data;
         }
 
         var new_data = [];
         var isShown;
-        for(var i = 0; i < data.length; i++){
+        for (var i = 0; i < data.length; i++) {
             isShown = false;
             if (typeof filterField == 'string' && filterField) // Search specific field
             {
-                if (typeof data[i][filterField] == 'undefined'){
+                if (typeof data[i][filterField] == 'undefined') {
                     continue;
                 }
 
@@ -1123,17 +1138,17 @@
             else {
                 if (typeof filterField != 'array' && typeof filterField != 'object') {
                     filterField = [];
-                    for(var k in fields)    filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k] );
+                    for (var k in fields) filterField.push(typeof fields[k] == 'object' ? fields[k]['name'] : fields[k]);
                 }
 
 
                 for (var k in filterField) {
 
-                    if (typeof data[i][filterField[k]] == 'undefined'){
+                    if (typeof data[i][filterField[k]] == 'undefined') {
                         continue;
                     }
 
-                    var fieldValue = (data[i][filterField[k]])?data[i][filterField[k]].toString().toLowerCase():"";
+                    var fieldValue = (data[i][filterField[k]]) ? data[i][filterField[k]].toString().toLowerCase() : "";
                     if (filterType == 'start' && fieldValue.substr(0, input_value_low.length) == input_value_low) {
                         isShown = true;
                     }
@@ -1143,7 +1158,7 @@
                 }
             }
 
-            if(isShown) new_data.push(data[i]);
+            if (isShown) new_data.push(data[i]);
         }
         return new_data;
     }
@@ -1154,13 +1169,13 @@
      * @private
      */
     function _dataRender(input) {
-        if (_typeIsMultiple(input)){
+        if (_typeIsMultiple(input)) {
             _dataRenderMultiple(input);
         }
-        else if (_typeIsTag(input)){
+        else if (_typeIsTag(input)) {
             _dataRenderTag(input);
         }
-        else{
+        else {
             _dataRenderDefault(input);
         }
     }
@@ -1173,19 +1188,19 @@
 
         // Load CSS
         output += "<style>";
-        if ( tmp = _set(input, 'listBackgroundColor') ){
+        if (tmp = _set(input, 'listBackgroundColor')) {
             wrapped_list.css('backgroundColor', tmp);
         }
-        if ( tmp = _set(input, 'listBorderColor') ){
+        if (tmp = _set(input, 'listBorderColor')) {
             wrapped_list.css('borderColor', tmp);
         }
 
         tmp1 = _set(input, 'rowSelectedBackgroundColor');
         tmp2 = _set(input, 'rowSelectedFontColor')
-        if ( tmp1 || tmp2 ){
+        if (tmp1 || tmp2) {
             output += ".inputpicker-wrapped-list .inputpicker-active{ ";
-            if(tmp1)    output += "background-color: " + tmp1 + "; ";
-            if(tmp2)    output += "color: " + tmp2 + "; ";
+            if (tmp1) output += "background-color: " + tmp1 + "; ";
+            if (tmp2) output += "color: " + tmp2 + "; ";
             output += "}";
         }
         output += "</style>";
@@ -1196,14 +1211,14 @@
     function _renderTableHeader(input) {
         var output = "";
         var fields = _set(input, 'fields');
-        if(_set(input, 'headShow')){
+        if (_set(input, 'headShow')) {
             output += '<thead><tr>';
-            for(var i = 0; i < fields.length; i++){
+            for (var i = 0; i < fields.length; i++) {
                 var text = '';
-                if (typeof fields[i] == 'object'){
+                if (typeof fields[i] == 'object') {
                     text = fields[i]['text'] ? fields[i]['text'] : fields[i]['name'];
                 }
-                else{
+                else {
                     text = fields[i];
                 }
                 output += '<th>' + text + '</th>';
@@ -1213,10 +1228,10 @@
         return output;
     }
 
-    function _renderPaginationFooter(input){
+    function _renderPaginationFooter(input) {
         var fields = _set(input, 'fields');
         var output = "";
-        if( fields.length > 0 && _pagination(input)){
+        if (fields.length > 0 && _pagination(input)) {
             var fields = _set(input, 'fields');
             output += '<tfoot class="inputpicker-pagination"><tr><td align="right" colspan="' + fields.length + '">';
             output += "<div style=\"width:100%;\">";
@@ -1224,7 +1239,7 @@
             var count = _set(input, 'pageCount') ? parseInt(_set(input, 'pageCount')) : 0;
             var current_page = _set(input, 'pageCurrent') ? parseInt(_set(input, 'pageCurrent')) : 1;
             var limit = _set(input, 'limit') ? parseInt(_set(input, 'limit')) : 10;
-            var last_page = Math.ceil( count / limit);
+            var last_page = Math.ceil(count / limit);
             var prev_page = current_page > 1 ? (current_page - 1) : 1;
             var next_page = current_page < last_page ? (current_page + 1) : last_page;
 
@@ -1271,7 +1286,7 @@
     /**
      * Draw multiple values
      */
-    function _dataRenderMultiple(input){
+    function _dataRenderMultiple(input) {
 
         var original = _o(input);
         var inputpicker_div = _getInputpickerDiv(input);
@@ -1297,17 +1312,17 @@
         output += _renderCss(input);
 
         // Draw table
-        output += "<table class=\"table \">" ;
+        output += "<table class=\"table \">";
 
         // Show head
         output += _renderTableHeader(input);
 
         // Show data
-        if(data.length){
+        if (data.length) {
             output += "<tbody>";
             var isSelected = false;
-            for(var i = 0; i < data.length; i++) {
-                isSelected =  -1 < _inArray( data[i][fieldValue] , arr_value );
+            for (var i = 0; i < data.length; i++) {
+                isSelected = -1 < _inArray(data[i][fieldValue], arr_value);
                 output += '<tr class="inputpicker-element inputpicker-element-' + i + ' ' + (isSelected ? 'inputpicker-selected' : '') + ' " data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
                 for (var j = 0; j < fields.length; j++) {
 
@@ -1315,20 +1330,20 @@
                     var text = typeof data[i][k] != 'undefined' ? data[i][k] : '';
 
                     // Check if value is empty and set it is shown value
-                    if (!text){
+                    if (!text) {
                         text = '&nbsp;';
                     }
 
                     output += '<td';
-                    var html_style = ""; var custom_style="";
-                    if(_isObject(fields[j])){
-                        if(fields[j]['width']){
+                    var html_style = ""; var custom_style = "";
+                    if (_isObject(fields[j])) {
+                        if (fields[j]['width']) {
                             html_style += "width:" + fields[j]['width'];
                         }
                         //add custom style like no wrap column n others
                         //this is multi function adding style type on evert column
-                        if(fields[j]['col_custom']){
-                            html_style +=" "+fields[j]['col_custom'];
+                        if (fields[j]['col_custom']) {
+                            html_style += " " + fields[j]['col_custom'];
                         }
                         // ...
                     }
@@ -1340,7 +1355,7 @@
 
             output += "</tbody>";
         }
-        else{
+        else {
             output += "<thead><tr><td colspan='" + fields.length + "' align='center' class=\"inputpicker-no-result\">No results.</td></thead></tr>";
         }
 
@@ -1360,7 +1375,7 @@
                 original.trigger('change_highlight.inputpicker');
             }).on('click', function (e) {
                 var self = $(this);
-                var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
+                var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid');
                 var input = $('#inputpicker-' + uuid);
                 var selected = self.hasClass('inputpicker-selected');
                 var delimiter = _set(input, 'delimiter');
@@ -1368,7 +1383,7 @@
                 var value = _o(input).val();
                 var arr_value = value ? value.toString().split(delimiter) : [];
 
-                var i = _inArray( self.data('value'), arr_value);
+                var i = _inArray(self.data('value'), arr_value);
 
                 if (selected && i > -1)   // Need to remove it
                 {
@@ -1376,7 +1391,7 @@
                     self.removeClass('inputpicker-selected');
 
                 }
-                else if( !selected ){   // Not selected, need to select
+                else if (!selected) {   // Not selected, need to select
                     arr_value.push(self.data('value'));
                     self.addClass('inputpicker-selected');
                 }
@@ -1391,7 +1406,7 @@
                 // _o(input).trigger('change');
 
                 // To fix the bug of unable to close automatically in IE.
-                if (!_isMSIE()){
+                if (!_isMSIE()) {
                     input.focus();
                 }
                 _hideWrappedList();
@@ -1414,7 +1429,7 @@
         var uuid = _uuid(input);
         // var data = _set(input, 'data');
         var data = _filterData(input);
-        var popover = _set(input,'popover');
+        var popover = _set(input, 'popover');
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
         var filterOpen = _set(input, 'filterOpen');
@@ -1444,7 +1459,7 @@
         //     display: '',
         // })
         wrapped_list.show()
-        .data('inputpicker-uuid', uuid).html('');
+            .data('inputpicker-uuid', uuid).html('');
 
         _setWrappedListWidthAndHeight(input);
         _setWrappedListPosition(input);
@@ -1470,15 +1485,15 @@
         // output += "</style>";
 
         // Draw table
-        output += "<table class=\"table small\">" ;
+        output += "<table class=\"table small\">";
 
         // Show head
         output += _renderTableHeader(input);
 
         // Show data
-        if(data.length){
+        if (data.length) {
             output += "<tbody>";
-            for(var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 var tr_highlight = false;
 
@@ -1487,27 +1502,27 @@
 
                     var k = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
                     var text = typeof data[i][k] != 'undefined' ? data[i][k] : '';
-                    if(text){
-                        if ( value && text.toString().toLowerCase().indexOf(input_keyword_low) != -1){
+                    if (text) {
+                        if (value && text.toString().toLowerCase().indexOf(input_keyword_low) != -1) {
                             tr_highlight = true;
                         }
                     }
 
                     // Check if value is empty and set it is shown value
-                    if (!text){
+                    if (!text) {
                         text = '&nbsp;';
                     }
 
                     output_tds += '<td';
                     var html_style = "";
-                    if(_isObject(fields[j])){
-                        if(fields[j]['width']){
+                    if (_isObject(fields[j])) {
+                        if (fields[j]['width']) {
                             html_style += "width:" + fields[j]['width'];
                         }
                         //add custom style like no wrap column n others
                         //this is multi function adding style type on evert column
-                        if(fields[j]['col_custom']){
-                            html_style +=" "+fields[j]['col_custom'];
+                        if (fields[j]['col_custom']) {
+                            html_style += " " + fields[j]['col_custom'];
                         }
                         // ...
                     }
@@ -1517,30 +1532,43 @@
                 }
 
 
-                var tr_class = 'inputpicker-element inputpicker-element-' + i ;
+                var tr_class = 'inputpicker-element inputpicker-element-' + i;
 
 
-                if ( tr_highlight && highlightResult  ){
+                if (tr_highlight && highlightResult) {
                     tr_class += " inputpicker-highlight-active";
                 }
 
-                if( value == data[i][ fieldValue ]){
+                if (value == data[i][fieldValue]) {
                     tr_class += " inputpicker-active";
                 }
-                var ppover ="";
-                if(typeof popover!='undefined'){
-                    ppover ='data-toggle="popover" data-container="body" data-placement="top" data-trigger="hover" data-content="'+data[i][fieldValue]+'"';
+                var ppover = "";
+                if (typeof popover != 'undefined') {
+                    ppover = 'data-toggle="popover" data-container="body" data-placement="top" data-trigger="hover" data-content="' + data[i][fieldValue] + '"';
                 }
 
-                output +='<tr '+ppover+' d class=" ' + tr_class + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
+                output += '<tr ' + ppover + ' d class=" ' + tr_class + '" data-i="' + i + '" data-value="' + data[i][fieldValue] + '">';
                 output += output_tds;
                 output += '</tr>';
             }
 
             output += "</tbody>";
         }
-        else{
+        else {
             output += "<thead><tr><td colspan='" + fields.length + "' align='center'>No results.</td></thead></tr>";
+
+            // Only jump to nextPicker when the user has typed a keyword (not on blank/cleared input)
+            var nextPickerSelector = _set(input, 'nextPicker');
+            if (nextPickerSelector && input_keyword_low.trim().length > 0) {
+                setTimeout(function () {
+                    _hideWrappedList();
+                    var nextEl = $(nextPickerSelector);
+                    if (nextEl.length) {
+                        nextEl.inputpicker('show');
+                        nextEl.inputpicker('set', 'input').focus();
+                    }
+                }, 0);
+            }
         }
 
         output += _renderPaginationFooter(input);
@@ -1559,7 +1587,7 @@
                 that.addClass('inputpicker-active');
                 original.trigger('change_highlight.inputpicker');
             }).on('click', function (e) {
-                var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid') ;
+                var uuid = $('#inputpicker-wrapped-list').data('inputpicker-uuid');
                 var input = $('#inputpicker-' + uuid);
                 var data = _set(input, 'data');
 
@@ -1567,7 +1595,7 @@
                 _o(input).trigger('change');
 
                 // To fix the bug of unable to close automatically in IE.
-                if (!_isMSIE()){
+                if (!_isMSIE()) {
                     input.focus();
                 }
                 _hideWrappedList();
@@ -1578,7 +1606,7 @@
 
         // Check and change the cursor position if necessary
         var tr_active = _getWrappedListElements(true);
-        if ( tr_active.length && ( ( tr_active.position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight()) ) {
+        if (tr_active.length && ((tr_active.position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight())) {
             wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_active.data('i') * tr_active.outerHeight());
         }
     }
@@ -1593,8 +1621,8 @@
         var wrapped_list = _getWrappedList(input);
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
-        var filterType =  _set(input, 'filterType');
-        var filterField =  _set(input, 'filterField');
+        var filterType = _set(input, 'filterType');
+        var filterField = _set(input, 'filterField');
         var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_value_low = input_value.toString().toLowerCase();
@@ -1602,24 +1630,24 @@
 
         var tr_active = _getWrappedListElements(true);
 
-        if(!input_value_low){
-            return ;
+        if (!input_value_low) {
+            return;
         }
 
         // Check if is equal
-        if (_uuid(wrapped_list) != _uuid(input)){
-            return ;
+        if (_uuid(wrapped_list) != _uuid(input)) {
+            return;
         }
 
         var shouldBeActive = false;
 
-        if ( tr_active.length){
+        if (tr_active.length) {
             var i = tr_active.data('i');
             shouldBeActive = false;
 
             for (var j = 0; j < fields.length; j++) {
                 var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
-                if (typeof data[i][field_name] == 'undefined'){
+                if (typeof data[i][field_name] == 'undefined') {
                     continue;
                 }
                 var fieldValue = data[i][field_name].toString().toLowerCase();
@@ -1629,33 +1657,33 @@
                 }
             }
 
-            if (shouldBeActive){    // Still active
-                return ;
+            if (shouldBeActive) {    // Still active
+                return;
             }
         }
 
         // Select if can search
         var tr_new_active = null;
         var elements = _getWrappedListElements();
-        for(var x = 0; x < elements.length; x++){
+        for (var x = 0; x < elements.length; x++) {
             var i = $(elements[x]).data('i');
 
 
             for (var j = 0; j < fields.length; j++) {
 
                 var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
-                if (typeof data[i][field_name] == 'undefined'){
+                if (typeof data[i][field_name] == 'undefined') {
                     continue;
                 }
-                var fieldValue = (data[i][field_name])? data[i][field_name].toString().toLowerCase():data[i][field_name];
+                var fieldValue = (data[i][field_name]) ? data[i][field_name].toString().toLowerCase() : data[i][field_name];
                 if (fieldValue.substr(0, input_value_low.length) == input_value_low) {
                     tr_new_active = elements[x];
                     break;
                 }
             }
 
-            if (tr_new_active){    // Should set active
-                if(tr_active.length){
+            if (tr_new_active) {    // Should set active
+                if (tr_active.length) {
                     tr_active.removeClass('inputpicker-active');
                 }
                 $(tr_new_active).addClass('inputpicker-active');
@@ -1666,13 +1694,13 @@
                 // dd(tr_active, tr_active.position().top, tr_active.outerHeight(), wrapped_list.scrollTop(), wrapped_list.scrollTop() - tr_active.outerHeight() );
                 if (tr_active.position().top < tr_active.outerHeight()) {
                     // wrapped_list.scrollTop(wrapped_list.scrollTop() - tr_active.outerHeight());
-                    wrapped_list.scrollTop(tr_active.position().top );
+                    wrapped_list.scrollTop(tr_active.position().top);
                 }
-                else if ( ( tr_active.position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight())  {
+                else if ((tr_active.position().top + 2 * tr_active.outerHeight()) > wrapped_list.outerHeight()) {
                     wrapped_list.scrollTop(wrapped_list.scrollTop() + tr_active.data('i') * tr_active.outerHeight());
                 }
 
-                return ;
+                return;
             }
         }
 
@@ -1682,14 +1710,14 @@
     function _matchHighlightInRender(input) {
 
 
-        var highlightResult =  _set(input, 'highlightResult');
-        if(!highlightResult) return;
+        var highlightResult = _set(input, 'highlightResult');
+        if (!highlightResult) return;
 
         var wrapped_list = _getWrappedList(input);
         var fields = _set(input, 'fields');
         var fieldValue = _set(input, 'fieldValue');
-        var filterType =  _set(input, 'filterType');
-        var filterField =  _set(input, 'filterField');
+        var filterType = _set(input, 'filterType');
+        var filterField = _set(input, 'filterField');
         var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_keyword_low = input_value.toString().toLowerCase();
@@ -1699,8 +1727,8 @@
 
         var elements = _getWrappedListElements();
         elements.removeClass('inputpicker-highlight-active');
-        if ( !input_keyword_low) return;
-        for(var x = 0; x < elements.length; x++){
+        if (!input_keyword_low) return;
+        for (var x = 0; x < elements.length; x++) {
             var i = $(elements[x]).data('i');
 
 
@@ -1709,16 +1737,16 @@
             for (var j = 0; j < fields.length; j++) {
 
                 var field_name = (typeof fields[j] == 'object') ? fields[j]['name'] : fields[j];
-                if (typeof data[i][field_name] == 'undefined'){
+                if (typeof data[i][field_name] == 'undefined') {
                     continue;
                 }
                 var fieldValue = data[i][field_name].toString().toLowerCase();
-                if (fieldValue && fieldValue.indexOf(input_keyword_low) != -1){
+                if (fieldValue && fieldValue.indexOf(input_keyword_low) != -1) {
                     inputpick_highlight_active = true;
                 }
             }
 
-            if (inputpick_highlight_active){    // Should set active
+            if (inputpick_highlight_active) {    // Should set active
                 $(elements[x]).addClass('inputpicker-highlight-active');
             }
         }
@@ -1745,75 +1773,81 @@
     function _loadData(input, data, func) {
         var original = _o(input);
 
-        if( typeof func == 'undefined' && typeof data == 'undefined'){
+        if (typeof func == 'undefined' && typeof data == 'undefined') {
             return false;   // Nothing to do
         }
 
-        if( typeof func == 'undefined' && typeof data == 'function'){
+        if (typeof func == 'undefined' && typeof data == 'function') {
             func = data;
             data = null;
         }
 
         // Add a loading div for
         input.addClass('loading').prop('disabled', true);
-        if(_isMSIE())   input.addClass('loading-msie-patch');
+        if (_isMSIE()) input.addClass('loading-msie-patch');
 
-        if (_set(input, 'url')){
+        if (_set(input, 'url')) {
             // input.prop('disabled', true);
             var param = {};
-            if ( _isObject(data) && data){
+            if (_isObject(data) && data) {
                 param = data;
             }
 
             _execJSON(input, param, function (ret) {
                 var data;
 
-                if(_pagination(input)){
-                    _set(input, 'pageCount', ret[ _set(input, 'pageCountField')]);
+                if (_pagination(input)) {
+                    _set(input, 'pageCount', ret[_set(input, 'pageCountField')]);
                 }
 
-                if(_isArray(ret)){
+                if (_isArray(ret)) {
                     data = ret;
                 }
-                else{
+                else {
                     data = ret['data'];
                 }
 
                 // var data = ret['data'];
                 // Check and format data
-                if (! _isArray(data)  ){
-                   _alert( "The type of data(" + ( typeof data ) + ") is incorrect.", input);
+                if (!_isArray(data)) {
+                    _alert("The type of data(" + (typeof data) + ") is incorrect.", input);
                     data = _set(input, 'data');    // Still use old data
-                }else{   // apply new data
+                } else {   // apply new data
                     // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data) );
                     methods.data.call(input, data);
                 }
 
                 input.removeClass('loading').prop('disabled', false);
-                if(_isMSIE())   input.removeClass('loading-msie-patch');
+                if (_isMSIE()) input.removeClass('loading-msie-patch');
 
-                if(typeof func == 'function'){
+                if (typeof func == 'function') {
                     // func(input);
                     func.call(this, input, data);
                 }
+
+                // If focus was attempted while loading, open the dropdown now
+                if (input.data('inputpicker-pending-open')) {
+                    input.removeData('inputpicker-pending-open');
+                    methods.show.call(input);
+                }
             });
         }
-        else{
-            if( _isArray(data)){
+        else {
+            if (_isArray(data)) {
                 // _set(input, 'data', _formatData(_set(input, 'fieldValue'), data) );
                 methods.data.call(input, data);
             }
-            else{
+            else {
                 data = _set(input, 'data');
             }
 
-            if(typeof func == 'function'){
+            if (typeof func == 'function') {
                 // func(input);
                 func.call(this, input, data);
             }
 
             input.removeClass('loading').prop('disabled', false);
-            if(_isMSIE())   input.removeClass('loading-msie-patch');
+            if (_isMSIE()) input.removeClass('loading-msie-patch');
         }
 
     }
@@ -1831,34 +1865,34 @@
     function _setValue(input, value) {
 
         // if ( typeof )
-        if( _typeIsMultiple(input)){
+        if (_typeIsMultiple(input)) {
             return _setValueForMultiple(input, value);
         }
-        else if( _typeIsTag(input)){
+        else if (_typeIsTag(input)) {
             return _setValueForTag(input, value);
         }
-        else{
+        else {
             var original = _o(input);
             var old_original_value = original.val();
 
             var fieldValue = _set(input, 'fieldValue');
             var fieldText = _set(input, 'fieldText');
             var data = _set(input, 'data');
-            if ( !data.length)  return false;   // No data
+            if (!data.length) return false;   // No data
             var index_i = -1;
-            for(var i = 0; i < data.length; i++){
-                if ( data[i][ fieldValue ] == value){
+            for (var i = 0; i < data.length; i++) {
+                if (data[i][fieldValue] == value) {
                     index_i = i;
                 }
             }
 
-            if ( index_i == -1){    // Did not find
+            if (index_i == -1) {    // Did not find
 
-                if(_selectModeIsCreatable(input)){
+                if (_selectModeIsCreatable(input)) {
                     input.val(value);
-                    original.val( value);
+                    original.val(value);
                 }
-                else if (_selectModeIsEmpty(input)){
+                else if (_selectModeIsEmpty(input)) {
                     dd("res: index_i == -1 and empty, fieldValue:" + fieldValue + "; value: " + value);
                     dd(data);
                     input.val('');
@@ -1866,12 +1900,12 @@
                     original.val('');
                     value = '';
                 }
-                else{   // active and default
-                    if ( value ){   // Has value, reset
+                else {   // active and default
+                    if (value) {   // Has value, reset
                         index_i = 0;
-                        value = data[index_i][ fieldValue ];
+                        value = data[index_i][fieldValue];
                     }
-                    else{   // Not value keep null
+                    else {   // Not value keep null
                         input.val('');
                         input.data('value', '');
                         original.val('');
@@ -1879,10 +1913,10 @@
                 }
             }
 
-            if (index_i > -1){
-                input.val( data[index_i][ fieldText ]);
+            if (index_i > -1) {
+                input.val(data[index_i][fieldText]);
                 input.data('value', data[index_i][fieldValue]); // Check if it is equal the original when selectMode is empty
-                original.val( data[index_i][ fieldValue ]);
+                original.val(data[index_i][fieldValue]);
             }
 
             return old_original_value != value; // If changed
@@ -1901,17 +1935,17 @@
         var fieldText = _set(input, 'fieldText');
         var delimiter = _set(input, 'delimiter');
         var data = _set(input, 'data');
-        if ( !data.length)  return false;   // No data
+        if (!data.length) return false;   // No data
 
         var arr_values = value ? value.toString().split(delimiter) : [];
         var new_values = [];
-            // dd('old_original_value: ' + old_original_value + ' ; _setValueForMultiple: ' + value + ' ; arr= ', arr);
+        // dd('old_original_value: ' + old_original_value + ' ; _setValueForMultiple: ' + value + ' ; arr= ', arr);
         var new_data = [];
 
 
-        for(var i = 0; i < data.length; i++){
-            if ( -1 < _inArray(data[i][ fieldValue ], arr_values ) ){
-                new_values.push(data[i][ fieldValue ]);
+        for (var i = 0; i < data.length; i++) {
+            if (-1 < _inArray(data[i][fieldValue], arr_values)) {
+                new_values.push(data[i][fieldValue]);
                 new_data.push(data[i]);
             }
         }
@@ -1929,7 +1963,7 @@
         ul_multiple.find("li.inputpicker-element").remove();
         var li_input = input.closest('li');
 
-        for(var i = 0; i < new_data.length; i++){
+        for (var i = 0; i < new_data.length; i++) {
             var d = new_data[i];
             $("<li class=\"inputpicker-element\" data-value=\"" + d[fieldValue] + "\"><span>" + d[fieldText] + "</span> <a href=\"javascript:void(0);\" onclick=\"$(this).closest('.inputpicker-div').find('input').inputpicker('removeValue', $(this).parent().data('value') );event.stopPropagation();\" onmouseover=\"$(this).prev().addClass();\" tabindex='-1'>x</a></li>").insertBefore(li_input);
         }
@@ -1946,27 +1980,27 @@
      */
     function _setValueByActive(input) {
 
-        if (_typeIsMultiple(input)){
+        if (_typeIsMultiple(input)) {
             return _setValueByActiveForMultiple(input);
         }
-        else if (_typeIsTag(input)){
+        else if (_typeIsTag(input)) {
             return _setValueByActiveForMultiple(input);
         }
-        else{
+        else {
 
             var wrapped_list = _getWrappedList();
             var tr_active = _getWrappedListElements(true);
 
             // Check if is equal
-            if (_uuid(wrapped_list) != _uuid(input)){
+            if (_uuid(wrapped_list) != _uuid(input)) {
                 return false;
             }
 
-            if ( tr_active.length){
+            if (tr_active.length) {
                 // dd('tr_active.length:' , tr_active.length);
                 return _setValue(input, tr_active.data('value'));
             }
-            else{   // Not selected, No any change
+            else {   // Not selected, No any change
                 return false;
             }
         }
@@ -1983,11 +2017,11 @@
         var tr_active = _getWrappedListElements(true);
 
         // Check if is equal
-        if (_uuid(wrapped_list) != _uuid(input)){
+        if (_uuid(wrapped_list) != _uuid(input)) {
             return false;
         }
 
-        if ( tr_active.length){
+        if (tr_active.length) {
             // dd('tr_active.length:' , tr_active.length);
             // return _setValue(input, tr_active.data('value'));
 
@@ -1997,14 +2031,14 @@
             var arr_value = value ? value.toString().split(delimiter) : [];
 
             var selected = self.hasClass('inputpicker-selected');
-            var i = _inArray( self.data('value'), arr_value);
+            var i = _inArray(self.data('value'), arr_value);
             if (selected && i > -1)   // Need to remove it
             {
                 arr_value.splice(i, 1);
                 self.removeClass('inputpicker-selected');
 
             }
-            else if( !selected ){   // Not selected, need to select
+            else if (!selected) {   // Not selected, need to select
                 arr_value.push(self.data('value'));
                 self.addClass('inputpicker-selected');
             }
@@ -2013,7 +2047,7 @@
 
             return _setValue(input, arr_value.join(delimiter));
         }
-        else{   // Not selected, No any change
+        else {   // Not selected, No any change
             return false;
         }
 
@@ -2026,17 +2060,17 @@
 
     function _isWrappedListVisible(input) {
         var wrapped_list = _getWrappedList();
-        if (wrapped_list.is(':visible') && _uuid(wrapped_list) == _uuid(input)){
-            return true ;
+        if (wrapped_list.is(':visible') && _uuid(wrapped_list) == _uuid(input)) {
+            return true;
         }
-        else{
+        else {
             return false;
         }
     }
 
     function _hideWrappedList(ifReset) {
         var wrapped_list = _getWrappedList();
-        if(typeof ifReset != 'undefined' && ifReset) {
+        if (typeof ifReset != 'undefined' && ifReset) {
             _uuid(wrapped_list, 0);
         }
         return wrapped_list ? wrapped_list.hide() : false;
@@ -2053,7 +2087,7 @@
     function _getWrappedListElements(isActive) {
 
         var p = '.inputpicker-element';
-        if (typeof isActive != 'undefined' ){
+        if (typeof isActive != 'undefined') {
             p += isActive ? '.inputpicker-active' : ':not(.inputpicker-active)';
         }
         return _getWrappedList().find(p);
@@ -2069,55 +2103,54 @@
 
 
     function _generateUid() {
-        if(!window.inputpickerUUID) window.inputpickerUUID = 0;
+        if (!window.inputpickerUUID) window.inputpickerUUID = 0;
         return ++window.inputpickerUUID;
     }
 
-    function _isMSIE()
-    {
-        var iev=0;
+    function _isMSIE() {
+        var iev = 0;
         var ieold = (/MSIE (\d+\.\d+);/.test(navigator.userAgent));
         var trident = !!navigator.userAgent.match(/Trident\/7.0/);
-        var rv=navigator.userAgent.indexOf("rv:11.0");
+        var rv = navigator.userAgent.indexOf("rv:11.0");
 
-        if (ieold) iev=new Number(RegExp.$1);
-        if (navigator.appVersion.indexOf("MSIE 10") != -1) iev=10;
-        if (trident&&rv!=-1) iev=11;
+        if (ieold) iev = new Number(RegExp.$1);
+        if (navigator.appVersion.indexOf("MSIE 10") != -1) iev = 10;
+        if (trident && rv != -1) iev = 11;
 
         return iev;
     }
 
     function _setValueForInput(input) {
 
-        if ( _selectModeIsActive(input) ){   // Change value by tab
+        if (_selectModeIsActive(input)) {   // Change value by tab
             if (_setValueByActive(input)) {  // Value changed
                 _o(input).trigger('change');
             }
         }
-        else if (_selectModeIsCreatable(input)){      // Set the current keyword is new value
-            if(!_inputValueEqualToOriginalValue(input)){
+        else if (_selectModeIsCreatable(input)) {      // Set the current keyword is new value
+            if (!_inputValueEqualToOriginalValue(input)) {
                 _o(input).val(_i(input).val()).trigger('change');
             }
         }
-        else if (_selectModeIsEmpty(input)){ // Set the value is empty if does not find
-            if ( _i(input).val() != '' && (!_i(input).data('value')) && (!_o(input).val())){
+        else if (_selectModeIsEmpty(input)) { // Set the value is empty if does not find
+            if (_i(input).val() != '' && (!_i(input).data('value')) && (!_o(input).val())) {
                 _i(input).val('');
             }
-            else if(!_inputValueEqualToOriginalValue(input)){
+            else if (!_inputValueEqualToOriginalValue(input)) {
                 _i(input).val('');
                 _i(input).data('value', '');
                 _o(input).val('').trigger('change');
             }
         }
-        else{   // restore
-            if( _i(input).val()){   // If input is not ''
+        else {   // restore
+            if (_i(input).val()) {   // If input is not ''
                 _setValue(input, _o(input).val());
             }
-            else{
+            else {
                 // trigger change if activate
                 var old_value = _o(input).val();
                 _setValue(input, '');
-                if ( old_value != ''){
+                if (old_value != '') {
                     _o(input).trigger('change');
                 }
             }
@@ -2131,8 +2164,13 @@
      */
     function _eventFocus(e) {
         var input = _i($(this));
-        if(_set(input, "autoOpen")){
-            methods.show.call(input, e);
+        if (_set(input, "autoOpen") || _set(input, "openAfterLoad")) {
+            if (input.prop('disabled')) {
+                // Input is still loading data — mark as pending so show fires after load
+                input.data('inputpicker-pending-open', true);
+            } else {
+                methods.show.call(input, e);
+            }
         }
     }
 
@@ -2141,7 +2179,7 @@
         var original = _o(input);
 
 
-        if ( _selectModeIsEmpty(input)){
+        if (_selectModeIsEmpty(input)) {
             return;
         }
         //_setValueForInput(input); ???
@@ -2169,10 +2207,10 @@
         //     e.preventDefault();
         //     return;
         // }
-        dd( _name(input) + '._eventKeyDown:' + e.keyCode + '; charCode:' + e.charCode);
+        dd(_name(input) + '._eventKeyDown:' + e.keyCode + '; charCode:' + e.charCode);
 
 
-        switch(e.keyCode){
+        switch (e.keyCode) {
             case 37:    // Left
             case 38:    // Up
                 //_changeWrappedListSelected
@@ -2199,12 +2237,12 @@
                 _changeWrappedListSelected(input, 1);
                 break;
             case 27:    // Esc
-                if( _selectModeIsCreatable(input)) {
-                    if(!_inputValueEqualToOriginalValue(input)){
+                if (_selectModeIsCreatable(input)) {
+                    if (!_inputValueEqualToOriginalValue(input)) {
                         _o(input).trigger('change');
                     }
                 }
-                else{
+                else {
                     _setValue(input, _o(input).val());
                 }
                 _hideWrappedList();
@@ -2216,12 +2254,12 @@
             case 13:    // Enter
                 e.preventDefault(); // Prevent from submitting form
                 methods.toggle.call(input, e);
-                if ( _setValueByActive(input) ){
+                if (_setValueByActive(input)) {
                     _o(input).trigger('change');
                 }
-                else{
-                    if( _isCreatable(input)){
-                        if(!_inputValueEqualToOriginalValue(input)){
+                else {
+                    if (_isCreatable(input)) {
+                        if (!_inputValueEqualToOriginalValue(input)) {
                             _o(input).trigger('change');
                         }
                     }
@@ -2229,10 +2267,10 @@
                 break;
             case 8:    // Backspace
 
-                if (input.val() == '' && ( _typeIsMultiple(input) || _typeIsTag(input) ) && _getInputMultipleElements(input).length){
+                if (input.val() == '' && (_typeIsMultiple(input) || _typeIsTag(input)) && _getInputMultipleElements(input).length) {
                     var original = _o(input);
                     var o_value = original.val().split(_set(input, 'delimiter'));
-                    if(o_value.length){
+                    if (o_value.length) {
                         o_value.pop();
                         original.val(o_value).trigger('change');
                     }
@@ -2258,28 +2296,28 @@
         // }
 
         //, e.which, String.fromCharCode(e.which), e.which !== 0 && e.charCode !== 0
-        dd( _name(input) + '._eventKeyUp:' + e.keyCode );
+        dd(_name(input) + '._eventKeyUp:' + e.keyCode);
 
-        if ($.inArray( e.keyCode, [37, 38, 39, 40, 27, 9, 13, 16, 17, 18]) != -1 ){
-            return ;
+        if ($.inArray(e.keyCode, [37, 38, 39, 40, 27, 9, 13, 16, 17, 18]) != -1) {
+            return;
         }
 
 
         // Keyword changes
-        if ( _set(input, 'url')){
+        if (_set(input, 'url')) {
 
             // If it is backspace, and data.length is not empty do not change
             var data = _set(input, 'data');
-            if (e.keyCode == 8 && data.length ){
+            if (e.keyCode == 8 && data.length) {
 
                 _matchHighlightInRender(input);
-                return ;
+                return;
             }
 
             // Check if delay
             var delay = parseFloat(_set(input, 'urlDelay'));
             var delayHandler = _set(input, 'delayHandler');
-            if ( delayHandler ){
+            if (delayHandler) {
                 clearTimeout(delayHandler);
                 _set(input, 'delayHandler', false);
             }
@@ -2288,18 +2326,31 @@
             delayHandler = setTimeout(_loadData, delay * 1000, input, function (input) {
                 _dataRender(input);
                 var wrapped_elements = _getWrappedListElements();
-                if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
+                if (_isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 && wrapped_elements.length) {
                     wrapped_list.first().addClass('inputpicker-active');
                     original.trigger('change_highlight.inputpicker');
                 }
                 _matchActiveInRender(input);
                 _matchHighlightInRender(input);
-                if(!input.is(":focus")) {
+                if (!input.is(":focus")) {
                     dd('focus', input)
                     input.focus();
                 }
 
-            } );
+                // Only jump to nextPicker when the user has actually typed something (not on cleared input)
+                var loadedData = _set(input, 'data');
+                var nextPickerSelector = _set(input, 'nextPicker');
+                var keyword = input.val().trim();
+                if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length > 0) {
+                    _hideWrappedList();
+                    var nextEl = $(nextPickerSelector);
+                    if (nextEl.length) {
+                        nextEl.inputpicker('show');
+                        nextEl.focus();
+                    }
+                }
+
+            });
             _set(input, 'delayHandler', delayHandler);
 
 
@@ -2313,18 +2364,18 @@
             //
             // });
         }
-        else{
-            if(_set(input, 'filterOpen')){  // Need to render with filtering
+        else {
+            if (_set(input, 'filterOpen')) {  // Need to render with filtering
                 _dataRender(input);
             }
-            else{   // show straightway
+            else {   // show straightway
                 methods.show.call(input, e);
             }
 
             // Active matched ?
 
             var wrapped_elements = _getWrappedListElements();
-            if ( _isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 &&  wrapped_elements.length){
+            if (_isWrappedListVisible(input) && _getWrappedListElements(true).length == 0 && wrapped_elements.length) {
                 wrapped_list.first().addClass('inputpicker-active');
                 original.trigger('change_highlight.inputpicker');
             }
@@ -2350,8 +2401,8 @@
     }
 
     function _inArray(k, a) {
-        for(var i = 0; i < a.length; i++){
-            if(k == a[i]){
+        for (var i = 0; i < a.length; i++) {
+            if (k == a[i]) {
                 return i;
             }
         }
@@ -2361,14 +2412,14 @@
 
     // -------------------------------------------------------------------------------------------
     $.fn.inputpicker = function (method) {
-        if(!this.length) return this;
-        if(typeof method == 'object' || !method){
+        if (!this.length) return this;
+        if (typeof method == 'object' || !method) {
             return methods.init.apply(this, arguments);
         }
-        else if(methods[method]){
+        else if (methods[method]) {
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         }
-        else { $.error("Method "+ method + " does not exist on jQuery.inputpicker"); }
+        else { $.error("Method " + method + " does not exist on jQuery.inputpicker"); }
     }
 
 
@@ -2385,6 +2436,18 @@
         height: '200px',
 
         /**
+         * Open the dropdown automatically after data is initialized and loaded
+         */
+        openAfterLoad: false,
+
+        /**
+         * CSS selector of the next inputpicker to open when current has no data.
+         * Only used when openAfterLoad is true.
+         * Example: '#myOtherInput'
+         */
+        nextPicker: null,
+
+        /**
          * Selected automatically when focus
          */
         autoOpen: false,
@@ -2395,7 +2458,7 @@
         tabToSelect: false,
 
 
-        creatable : false,    // Allow user creates new value when true,
+        creatable: false,    // Allow user creates new value when true,
 
         /**
          * The action after pressing 'tab'
@@ -2404,25 +2467,25 @@
          * new: Use the current keyword,
          * null : Set the word is null
          */
-        selectMode : 'restore',
+        selectMode: 'restore',
 
 
         /**
          * True - show head
          * False
          */
-        headShow : false,   // true : show head, false: hide
+        headShow: false,   // true : show head, false: hide
 
 
         /**
          * Support multiple values
          */
-        multiple : false,
+        multiple: false,
 
         /**
          * Tag
          */
-        tag : false,
+        tag: false,
 
         /**
          * Delimiter for multiple values
@@ -2451,7 +2514,7 @@
          * The field shown in the input
          * Will use fieldValue if empty
          */
-        fieldText :'',
+        fieldText: '',
 
 
         // filter Setting
@@ -2512,26 +2575,26 @@
         pageCurrent: 1, // Current page
 
         pageCountField: 'count',
-        pageCount:0,    // System uses
+        pageCount: 0,    // System uses
 
 
         listBackgroundColor: '',
         listBorderColor: '',
         rowSelectedBackgroundColor: '',
-        rowSelectedFontColor : '',
+        rowSelectedFontColor: '',
 
         // Un-necessary - Use Pagination
         // pagination: false,
 
 
         // All the result match keywords will highlight, only
-        highlightResult : false,
+        highlightResult: false,
 
 
         responsive: true,
 
         _bottom: '',
-        popover:''
+        popover: ''
 
     };
 
