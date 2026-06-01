@@ -156,8 +156,6 @@
                 _init(input);
 
 
-
-
                 // Load data and set value
                 _loadData(input, settings['data'], function (input) {
                     if (!_setValue(input, original.val())) {
@@ -167,17 +165,34 @@
                     if (_set(input, 'openAfterLoad')) {
                         var loadedData = _set(input, 'data');
                         var nextPickerSelector = _set(input, 'nextPicker');
-                        if ((!loadedData || !loadedData.length) && nextPickerSelector) {
-                            // No data: close current and open the next picker
+                        var keyword = input.val().trim();
+                         
+                        // ? Only jump to nextPicker if this is the initial load (no keyword typed)
+                        if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length === 0) {
                             _hideWrappedList();
                             var nextEl = $(nextPickerSelector);
                             if (nextEl.length) {
-                                nextEl.inputpicker('show');
+                                // ✅ Check if it's an inputpicker or regular input
+                                var isInputpicker = nextEl.hasClass('inputpicker-original') || nextEl.data('inputpicker-input');
+
+                                if (isInputpicker) {
+                                    // It's an inputpicker dropdown - load data and show
+                                    nextEl.inputpicker('loadData', null, function (nextInput, nextData) {
+                                        nextEl.inputpicker('show');
+                                        nextEl.focus().select();
+                                    });
+                                } else {
+                                    // It's a regular input field - just focus it
+                                    nextEl.focus().select();
+                                }
                             }
                         } else {
+                            // Show current dropdown even if search returned no matches
                             methods.show.call(input);
+                            input.focus().select(); // keep cursor in current dropdown
                         }
                     }
+
                 });
                 _initPP();
             })
@@ -412,7 +427,6 @@
             return this.each(function () {
                 var input = _i($(this));
                 var uuid = _uuid(input);
-
                 // Check the input is visible
                 if (!_isInputVisible(input)) {
                     _alert('input[name=' + _name(input) + '] is not visible.');
@@ -1559,13 +1573,27 @@
 
             // Only jump to nextPicker when the user has typed a keyword (not on blank/cleared input)
             var nextPickerSelector = _set(input, 'nextPicker');
-            if (nextPickerSelector && input_keyword_low.trim().length > 0) {
+            if (nextPickerSelector && input_keyword_low.trim().length == 0) {
                 setTimeout(function () {
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
                     if (nextEl.length) {
-                        nextEl.inputpicker('show');
-                        nextEl.inputpicker('set', 'input').focus();
+                        // ✅ Check if it's an inputpicker or regular input
+                        var isInputpicker = nextEl.hasClass('inputpicker-original') || nextEl.data('inputpicker-input');
+
+                        if (isInputpicker) {
+                            // It's an inputpicker dropdown - show it
+                            try {
+                                nextEl.inputpicker('show');
+                                nextEl.focus().select();
+                            } catch (e) {
+                                // Fallback if inputpicker methods fail
+                                nextEl.focus().select();
+                            }
+                        } else {
+                            // It's a regular input field - just focus
+                            nextEl.focus().select();
+                        }
                     }
                 }, 0);
             }
@@ -2341,9 +2369,10 @@
                 var loadedData = _set(input, 'data');
                 var nextPickerSelector = _set(input, 'nextPicker');
                 var keyword = input.val().trim();
-                if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length > 0) {
+                if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length == 0) {
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
+                     
                     if (nextEl.length) {
                         nextEl.inputpicker('show');
                         nextEl.focus();
