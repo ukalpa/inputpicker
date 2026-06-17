@@ -166,16 +166,25 @@
                         var loadedData = _set(input, 'data');
                         var nextPickerSelector = _set(input, 'nextPicker');
                         var keyword = input.val().trim();
-
+                         
                         // ? Only jump to nextPicker if this is the initial load (no keyword typed)
                         if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length === 0) {
                             _hideWrappedList();
                             var nextEl = $(nextPickerSelector);
                             if (nextEl.length) {
-                                nextEl.inputpicker('loadData', null, function (nextInput, nextData) {
-                                    nextEl.inputpicker('show');
+                                // ✅ Check if it's an inputpicker or regular input
+                                var isInputpicker = nextEl.hasClass('inputpicker-original') || nextEl.data('inputpicker-input');
+
+                                if (isInputpicker) {
+                                    // It's an inputpicker dropdown - load data and show
+                                    nextEl.inputpicker('loadData', null, function (nextInput, nextData) {
+                                        nextEl.inputpicker('show');
+                                        nextEl.focus().select();
+                                    });
+                                } else {
+                                    // It's a regular input field - just focus it
                                     nextEl.focus().select();
-                                });
+                                }
                             }
                         } else {
                             // Show current dropdown even if search returned no matches
@@ -418,7 +427,6 @@
             return this.each(function () {
                 var input = _i($(this));
                 var uuid = _uuid(input);
-                debugger;
                 // Check the input is visible
                 if (!_isInputVisible(input)) {
                     _alert('input[name=' + _name(input) + '] is not visible.');
@@ -1570,9 +1578,22 @@
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
                     if (nextEl.length) {
-                        nextEl.inputpicker('show');
-                        nextEl.focus().select();
-                        //nextEl.inputpicker('set', 'input').focus();
+                        // ✅ Check if it's an inputpicker or regular input
+                        var isInputpicker = nextEl.hasClass('inputpicker-original') || nextEl.data('inputpicker-input');
+
+                        if (isInputpicker) {
+                            // It's an inputpicker dropdown - show it
+                            try {
+                                nextEl.inputpicker('show');
+                                nextEl.focus().select();
+                            } catch (e) {
+                                // Fallback if inputpicker methods fail
+                                nextEl.focus().select();
+                            }
+                        } else {
+                            // It's a regular input field - just focus
+                            nextEl.focus().select();
+                        }
                     }
                 }, 0);
             }
@@ -2351,6 +2372,7 @@
                 if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length == 0) {
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
+                     
                     if (nextEl.length) {
                         nextEl.inputpicker('show');
                         nextEl.focus();
