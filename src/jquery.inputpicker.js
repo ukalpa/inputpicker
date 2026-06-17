@@ -156,28 +156,34 @@
                 _init(input);
 
 
-
-
                 // Load data and set value
                 _loadData(input, settings['data'], function (input) {
                     if (!_setValue(input, original.val())) {
                     }
-
+                    debugger;
                     // Open dropdown after data is loaded if openAfterLoad is set
                     if (_set(input, 'openAfterLoad')) {
                         var loadedData = _set(input, 'data');
                         var nextPickerSelector = _set(input, 'nextPicker');
-                        if ((!loadedData || !loadedData.length) && nextPickerSelector) {
-                            // No data: close current and open the next picker
+                        var keyword = input.val().trim();
+
+                        // ? Only jump to nextPicker if this is the initial load (no keyword typed)
+                        if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length === 0) {
                             _hideWrappedList();
                             var nextEl = $(nextPickerSelector);
                             if (nextEl.length) {
-                                nextEl.inputpicker('show');
+                                nextEl.inputpicker('loadData', null, function (nextInput, nextData) {
+                                    nextEl.inputpicker('show');
+                                    nextEl.focus().select();
+                                });
                             }
                         } else {
+                            // Show current dropdown even if search returned no matches
                             methods.show.call(input);
+                            input.focus().select(); // keep cursor in current dropdown
                         }
                     }
+
                 });
                 _initPP();
             })
@@ -412,7 +418,7 @@
             return this.each(function () {
                 var input = _i($(this));
                 var uuid = _uuid(input);
-
+                debugger;
                 // Check the input is visible
                 if (!_isInputVisible(input)) {
                     _alert('input[name=' + _name(input) + '] is not visible.');
@@ -1108,7 +1114,7 @@
         var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_value_low = input_value.toString().toLowerCase();
-
+        debugger;
         // var limit = _set(input, 'limit');
         // var page = ( typeof page == 'undefined' || page < 1 ) ? 1 : parseInt(page);
         // dd(data, limit, page);
@@ -1559,13 +1565,14 @@
 
             // Only jump to nextPicker when the user has typed a keyword (not on blank/cleared input)
             var nextPickerSelector = _set(input, 'nextPicker');
-            if (nextPickerSelector && input_keyword_low.trim().length > 0) {
+            if (nextPickerSelector && input_keyword_low.trim().length == 0) {
                 setTimeout(function () {
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
                     if (nextEl.length) {
                         nextEl.inputpicker('show');
-                        nextEl.inputpicker('set', 'input').focus();
+                        nextEl.focus().select();
+                        //nextEl.inputpicker('set', 'input').focus();
                     }
                 }, 0);
             }
@@ -2341,7 +2348,7 @@
                 var loadedData = _set(input, 'data');
                 var nextPickerSelector = _set(input, 'nextPicker');
                 var keyword = input.val().trim();
-                if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length > 0) {
+                if ((!loadedData || !loadedData.length) && nextPickerSelector && keyword.length == 0) {
                     _hideWrappedList();
                     var nextEl = $(nextPickerSelector);
                     if (nextEl.length) {
