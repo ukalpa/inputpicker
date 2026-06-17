@@ -160,7 +160,7 @@
                 _loadData(input, settings['data'], function (input) {
                     if (!_setValue(input, original.val())) {
                     }
-
+                    debugger;
                     // Open dropdown after data is loaded if openAfterLoad is set
                     if (_set(input, 'openAfterLoad')) {
                         var loadedData = _set(input, 'data');
@@ -1122,7 +1122,7 @@
         var data = _formatData(fieldValue, methods.data.call(input));
         var input_value = input.val();
         var input_value_low = input_value.toString().toLowerCase();
-
+        debugger;
         // var limit = _set(input, 'limit');
         // var page = ( typeof page == 'undefined' || page < 1 ) ? 1 : parseInt(page);
         // dd(data, limit, page);
